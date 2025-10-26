@@ -1,24 +1,23 @@
-package metty1337.currencyexchange.dao;
+package metty1337.currencyexchange.db;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import metty1337.currencyexchange.util.DatabaseConnection;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DatabaseManager {
-    private static final String URL_OF_DB = "jdbc:sqlite:src/main/data/db/sqlite/database.db";
-    private static final String URL_OF_SQL_SCHEMA = "/sqlscripts/init_schema.sql";
+    private static final String URL_OF_SQL_SCHEMA = "/sql_scripts/init_schema.sql";
 
 
     public static void init() {
-        try (Connection connection = DriverManager.getConnection(URL_OF_DB)) {
+        try (Connection connection = DatabaseConnection.getConnection()) {
             String SQLScript = getSQLScript(URL_OF_SQL_SCHEMA);
             Statement statement = connection.createStatement();
             turnForeignKeysOn(statement);
