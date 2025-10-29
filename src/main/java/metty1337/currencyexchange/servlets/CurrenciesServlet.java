@@ -1,13 +1,11 @@
 package metty1337.currencyexchange.servlets;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import metty1337.currencyexchange.dao.CurrencyDAO;
 import metty1337.currencyexchange.dto.CurrencyDTO;
-import metty1337.currencyexchange.errors.ErrorCell;
 import metty1337.currencyexchange.errors.ErrorMessages;
 import metty1337.currencyexchange.exceptions.CurrencyAlreadyExists;
 import metty1337.currencyexchange.exceptions.DatabaseException;
@@ -15,7 +13,6 @@ import metty1337.currencyexchange.mapper.CurrencyMapper;
 import metty1337.currencyexchange.service.CurrencyService;
 import metty1337.currencyexchange.util.JsonManager;
 
-import java.io.IOException;
 import java.util.List;
 
 @WebServlet(name = "CurrenciesServlet", value = "/currencies")
@@ -29,9 +26,7 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     public void init() {
-        CurrencyMapper currencyMapper = new CurrencyMapper();
-        CurrencyDAO currencyDAO = new CurrencyDAO();
-        this.currencyService = new CurrencyService(currencyDAO, currencyMapper);
+        this.currencyService = createCurrencyService();
     }
 
     @Override
@@ -68,7 +63,7 @@ public class CurrenciesServlet extends HttpServlet {
             CurrencyDTO currencyDTO = new CurrencyDTO(null, name, code, sign);
             try {
                 currencyService.createCurrency(currencyDTO);
-                currencyDTO = currencyService.getCurrency(currencyDTO.getCode());
+                currencyDTO = currencyService.getCurrencyByCode(currencyDTO.getCode());
                 response.setStatus(HttpServletResponse.SC_CREATED);
                 JsonManager.writeJsonResult(response, currencyDTO);
             } catch (RuntimeException e) {
@@ -87,5 +82,11 @@ public class CurrenciesServlet extends HttpServlet {
 
     private boolean isCurrencyComponentsValid(String name, String code, String sign) {
         return name == null || name.isEmpty() || code == null || code.isEmpty() || sign == null || sign.isEmpty();
+    }
+
+    private CurrencyService createCurrencyService() {
+        CurrencyMapper currencyMapper = new CurrencyMapper();
+        CurrencyDAO currencyDAO = new CurrencyDAO();
+        return new CurrencyService(currencyDAO, currencyMapper);
     }
 }

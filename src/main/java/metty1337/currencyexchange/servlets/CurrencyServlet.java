@@ -1,13 +1,11 @@
 package metty1337.currencyexchange.servlets;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import metty1337.currencyexchange.dao.CurrencyDAO;
 import metty1337.currencyexchange.dto.CurrencyDTO;
-import metty1337.currencyexchange.errors.ErrorCell;
 import metty1337.currencyexchange.errors.ErrorMessages;
 import metty1337.currencyexchange.exceptions.CurrencyDoesntExistException;
 import metty1337.currencyexchange.mapper.CurrencyMapper;
@@ -24,9 +22,7 @@ public class CurrencyServlet extends HttpServlet {
 
     @Override
     public void init() {
-        CurrencyMapper currencyMapper = new CurrencyMapper();
-        CurrencyDAO currencyDAO = new CurrencyDAO();
-        this.currencyService = new CurrencyService(currencyDAO, currencyMapper);
+        this.currencyService = createCurrencyService();
     }
 
     @Override
@@ -44,7 +40,7 @@ public class CurrencyServlet extends HttpServlet {
             JsonManager.writeJsonError(response, ERROR_400_MESSAGE);
         } else {
             try {
-                CurrencyDTO currencyDTO = currencyService.getCurrency(code);
+                CurrencyDTO currencyDTO = currencyService.getCurrencyByCode(code);
                 response.setStatus(HttpServletResponse.SC_OK);
                 JsonManager.writeJsonResult(response, currencyDTO);
             } catch (RuntimeException e) {
@@ -73,6 +69,12 @@ public class CurrencyServlet extends HttpServlet {
             code = code.substring(1);
         }
         return code;
+    }
+
+    private CurrencyService createCurrencyService() {
+        CurrencyMapper currencyMapper = new CurrencyMapper();
+        CurrencyDAO currencyDAO = new CurrencyDAO();
+        return new CurrencyService(currencyDAO, currencyMapper);
     }
 //    private boolean isValidCode(String code) {
 //        return code.length() == 3 && code.matches("^[A-Z]+$");

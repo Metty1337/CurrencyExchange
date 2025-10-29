@@ -18,6 +18,7 @@ import java.util.List;
 public class CurrencyDAO {
     private static final String sqlSelectAllCurrencies = "SELECT ID, Code, FullName, Sign FROM Currencies";
     private static final String sqlSelectCurrencyByCode = "SELECT ID, Code, FullName, Sign FROM Currencies WHERE Code = ?";
+    private static final String sqlSelectCurrencyById = "SELECT ID, Code, FullName, Sign FROM Currencies WHERE ID = ?";
     private static final String sqlInsertIntoCurrencies = "INSERT INTO Currencies (Code, FullName, Sign) VALUES (?, ?, ?)";
     private static final int ErrorForConstraintViolation = 19;
 
@@ -43,6 +44,23 @@ public class CurrencyDAO {
              PreparedStatement preparedStatement = connection.prepareStatement(sqlSelectCurrencyByCode)) {
 
             preparedStatement.setString(1, code);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return mapRow(resultSet);
+                } else {
+                    throw new CurrencyDoesntExistException(ExceptionMessages.CurrencyDoesntExistException.getMessage());
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException(ExceptionMessages.DatabaseException.getMessage(), e);
+        }
+    }
+
+    public Currency findById(int id) {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sqlSelectCurrencyById)) {
+
+            preparedStatement.setInt(1, id);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
                     return mapRow(resultSet);
@@ -82,10 +100,10 @@ public class CurrencyDAO {
     private Currency mapRow(ResultSet resultSet) {
         try {
             return new Currency(
-                    resultSet.getInt(CurrenciesColumns.ID),
-                    resultSet.getString(CurrenciesColumns.CODE),
-                    resultSet.getString(CurrenciesColumns.NAME),
-                    resultSet.getString(CurrenciesColumns.SIGN)
+                    resultSet.getInt(CurrenciesColumns.ID.getColumnName()),
+                    resultSet.getString(CurrenciesColumns.CODE.getColumnName()),
+                    resultSet.getString(CurrenciesColumns.NAME.getColumnName()),
+                    resultSet.getString(CurrenciesColumns.SIGN.getColumnName())
             );
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -2,10 +2,13 @@ package metty1337.currencyexchange.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import metty1337.currencyexchange.errors.ErrorCell;
 
 import java.io.IOException;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class JsonManager {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 

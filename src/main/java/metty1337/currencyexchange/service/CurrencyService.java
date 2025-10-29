@@ -18,8 +18,13 @@ public class CurrencyService {
         return currencyMapper.toDTO(currencies);
     }
 
-    public CurrencyDTO getCurrency(String code) {
+    public CurrencyDTO getCurrencyByCode(String code) {
         Currency currency = currencyDAO.findByCode(code);
+        return currencyMapper.toDTO(currency);
+    }
+
+    public CurrencyDTO getCurrencyById(int id) {
+        Currency currency = currencyDAO.findById(id);
         return currencyMapper.toDTO(currency);
     }
 
