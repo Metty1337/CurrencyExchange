@@ -3,14 +3,13 @@ package metty1337.currencyexchange.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.jackson.Jacksonized;
 
 @AllArgsConstructor
 @Setter
 @Getter
-public class CurrencyDTO {
+public class ExchangeRateDTO {
     private Integer id;
-    private String name;
-    private String code;
-    private String sign;
+    private CurrencyDTO baseCurrency;
+    private CurrencyDTO targetCurrency;
+    private double rate;
 }

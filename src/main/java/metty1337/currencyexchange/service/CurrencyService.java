@@ -17,4 +17,14 @@ public class CurrencyService {
         List<Currency> currencies = currencyDAO.findAll();
         return currencyMapper.toDTO(currencies);
     }
+
+    public CurrencyDTO getCurrency(String code) {
+        Currency currency = currencyDAO.findByCode(code);
+        return currencyMapper.toDTO(currency);
+    }
+
+    public void createCurrency(CurrencyDTO currencyDTO) {
+        Currency currency = currencyMapper.toModel(currencyDTO);
+        currencyDAO.save(currency);
+    }
 }

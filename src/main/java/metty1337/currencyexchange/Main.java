@@ -12,7 +12,9 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        CurrenciesServlet servlet = new CurrenciesServlet();
-
+        String code = "AFN";
+        CurrencyDAO dao = new CurrencyDAO();
+        Currency currency = dao.findByCode(code);
+        System.out.println(currency);
     }
 }
