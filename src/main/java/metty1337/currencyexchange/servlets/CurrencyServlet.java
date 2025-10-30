@@ -4,11 +4,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import metty1337.currencyexchange.dao.CurrencyDAO;
 import metty1337.currencyexchange.dto.CurrencyDTO;
 import metty1337.currencyexchange.errors.ErrorMessages;
 import metty1337.currencyexchange.exceptions.CurrencyDoesntExistException;
-import metty1337.currencyexchange.mapper.CurrencyMapper;
+import metty1337.currencyexchange.factory.CurrencyServiceFactory;
 import metty1337.currencyexchange.service.CurrencyService;
 import metty1337.currencyexchange.util.JsonManager;
 
@@ -22,7 +21,7 @@ public class CurrencyServlet extends HttpServlet {
 
     @Override
     public void init() {
-        this.currencyService = createCurrencyService();
+        this.currencyService = CurrencyServiceFactory.createCurrencyService();
     }
 
     @Override
@@ -30,8 +29,7 @@ public class CurrencyServlet extends HttpServlet {
         String code = request.getPathInfo();
         code = transformIntoRightFormat(code);
 
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
+        JsonManager.prepareResponse(response);
 
         if (code.isBlank()) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -69,12 +67,6 @@ public class CurrencyServlet extends HttpServlet {
             code = code.substring(1);
         }
         return code;
-    }
-
-    private CurrencyService createCurrencyService() {
-        CurrencyMapper currencyMapper = new CurrencyMapper();
-        CurrencyDAO currencyDAO = new CurrencyDAO();
-        return new CurrencyService(currencyDAO, currencyMapper);
     }
 //    private boolean isValidCode(String code) {
 //        return code.length() == 3 && code.matches("^[A-Z]+$");

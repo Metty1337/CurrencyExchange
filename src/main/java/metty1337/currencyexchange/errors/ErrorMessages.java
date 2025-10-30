@@ -7,6 +7,6 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public enum ErrorMessages {
-    ERROR_500("Internal Server Error");
+    ERROR_500("Data Base is unavailable");
     private final String message;
 }

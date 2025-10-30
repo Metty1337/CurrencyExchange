@@ -2,7 +2,7 @@ package metty1337.currencyexchange.dao;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import metty1337.currencyexchange.exceptions.CurrencyAlreadyExists;
+import metty1337.currencyexchange.exceptions.CurrencyAlreadyExistsException;
 import metty1337.currencyexchange.exceptions.CurrencyDoesntExistException;
 import metty1337.currencyexchange.exceptions.DatabaseException;
 import metty1337.currencyexchange.exceptions.ExceptionMessages;
@@ -16,17 +16,17 @@ import java.util.List;
 
 @AllArgsConstructor(access = AccessLevel.PUBLIC)
 public class CurrencyDAO {
-    private static final String sqlSelectAllCurrencies = "SELECT ID, Code, FullName, Sign FROM Currencies";
-    private static final String sqlSelectCurrencyByCode = "SELECT ID, Code, FullName, Sign FROM Currencies WHERE Code = ?";
-    private static final String sqlSelectCurrencyById = "SELECT ID, Code, FullName, Sign FROM Currencies WHERE ID = ?";
-    private static final String sqlInsertIntoCurrencies = "INSERT INTO Currencies (Code, FullName, Sign) VALUES (?, ?, ?)";
-    private static final int ErrorForConstraintViolation = 19;
+    private static final String SELECT_ALL_CURRENCIES = "SELECT ID, Code, FullName, Sign FROM Currencies";
+    private static final String SELECT_CURRENCY_BY_CODE = "SELECT ID, Code, FullName, Sign FROM Currencies WHERE Code = ?";
+    private static final String SELECT_CURRENCY_BY_ID = "SELECT ID, Code, FullName, Sign FROM Currencies WHERE ID = ?";
+    private static final String INSERT_INTO_CURRENCIES = "INSERT INTO Currencies (Code, FullName, Sign) VALUES (?, ?, ?)";
+    private static final int ERROR_FOR_CONSTRAINT_VIOLATION = 19;
 
     public List<Currency> findAll() {
         List<Currency> currencies = new ArrayList<>();
         try (Connection connection = DatabaseConnection.getConnection();
              Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(sqlSelectAllCurrencies)) {
+             ResultSet resultSet = statement.executeQuery(SELECT_ALL_CURRENCIES)) {
 
             while (resultSet.next()) {
                 Currency currency = mapRow(resultSet);
@@ -35,41 +35,41 @@ public class CurrencyDAO {
 
             return currencies;
         } catch (SQLException e) {
-            throw new DatabaseException(ExceptionMessages.DatabaseException.getMessage(), e);
+            throw new DatabaseException(ExceptionMessages.DATABASE_EXCEPTION.getMessage(), e);
         }
     }
 
     public Currency findByCode(String code) {
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sqlSelectCurrencyByCode)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_CURRENCY_BY_CODE)) {
 
             preparedStatement.setString(1, code);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
                     return mapRow(resultSet);
                 } else {
-                    throw new CurrencyDoesntExistException(ExceptionMessages.CurrencyDoesntExistException.getMessage());
+                    throw new CurrencyDoesntExistException(ExceptionMessages.CURRENCY_DOESNT_EXIST_EXCEPTION.getMessage());
                 }
             }
         } catch (SQLException e) {
-            throw new DatabaseException(ExceptionMessages.DatabaseException.getMessage(), e);
+            throw new DatabaseException(ExceptionMessages.DATABASE_EXCEPTION.getMessage(), e);
         }
     }
 
     public Currency findById(int id) {
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sqlSelectCurrencyById)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_CURRENCY_BY_ID)) {
 
             preparedStatement.setInt(1, id);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
                     return mapRow(resultSet);
                 } else {
-                    throw new CurrencyDoesntExistException(ExceptionMessages.CurrencyDoesntExistException.getMessage());
+                    throw new CurrencyDoesntExistException(ExceptionMessages.CURRENCY_DOESNT_EXIST_EXCEPTION.getMessage());
                 }
             }
         } catch (SQLException e) {
-            throw new DatabaseException(ExceptionMessages.DatabaseException.getMessage(), e);
+            throw new DatabaseException(ExceptionMessages.DATABASE_EXCEPTION.getMessage(), e);
         }
     }
 
@@ -79,7 +79,7 @@ public class CurrencyDAO {
         String sign = currency.getSign();
 
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sqlInsertIntoCurrencies)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_INTO_CURRENCIES)) {
 
             preparedStatement.setString(1, code);
             preparedStatement.setString(2, fullName);
@@ -88,10 +88,10 @@ public class CurrencyDAO {
             preparedStatement.executeUpdate();
 
         } catch (SQLException e) {
-            if (e.getErrorCode() == ErrorForConstraintViolation) {
-                throw new CurrencyAlreadyExists(ExceptionMessages.CurrencyAlreadyExists.getMessage(), e);
+            if (e.getErrorCode() == ERROR_FOR_CONSTRAINT_VIOLATION) {
+                throw new CurrencyAlreadyExistsException(ExceptionMessages.CURRENCY_ALREADY_EXISTS.getMessage(), e);
             } else {
-                throw new DatabaseException(ExceptionMessages.DatabaseException.getMessage(), e);
+                throw new DatabaseException(ExceptionMessages.DATABASE_EXCEPTION.getMessage(), e);
             }
         }
 

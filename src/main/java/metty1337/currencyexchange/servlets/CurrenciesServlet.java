@@ -4,12 +4,11 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import metty1337.currencyexchange.dao.CurrencyDAO;
 import metty1337.currencyexchange.dto.CurrencyDTO;
 import metty1337.currencyexchange.errors.ErrorMessages;
-import metty1337.currencyexchange.exceptions.CurrencyAlreadyExists;
+import metty1337.currencyexchange.exceptions.CurrencyAlreadyExistsException;
 import metty1337.currencyexchange.exceptions.DatabaseException;
-import metty1337.currencyexchange.mapper.CurrencyMapper;
+import metty1337.currencyexchange.factory.CurrencyServiceFactory;
 import metty1337.currencyexchange.service.CurrencyService;
 import metty1337.currencyexchange.util.JsonManager;
 
@@ -26,13 +25,12 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     public void init() {
-        this.currencyService = createCurrencyService();
+        this.currencyService = CurrencyServiceFactory.createCurrencyService();
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) {
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
+        JsonManager.prepareResponse(response);
 
         try {
             List<CurrencyDTO> currenciesDTO = currencyService.getCurrencies();
@@ -48,8 +46,7 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) {
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
+        JsonManager.prepareResponse(response);
 
         String name = request.getParameter(PARAMETER_NAME);
         String code = request.getParameter(PARAMETER_CODE);
@@ -67,7 +64,7 @@ public class CurrenciesServlet extends HttpServlet {
                 response.setStatus(HttpServletResponse.SC_CREATED);
                 JsonManager.writeJsonResult(response, currencyDTO);
             } catch (RuntimeException e) {
-                if (e instanceof CurrencyAlreadyExists) {
+                if (e instanceof CurrencyAlreadyExistsException) {
                     response.setStatus(HttpServletResponse.SC_CONFLICT);
                     log(ERROR_409, e);
                     JsonManager.writeJsonError(response, ERROR_409);
@@ -82,11 +79,5 @@ public class CurrenciesServlet extends HttpServlet {
 
     private boolean isCurrencyComponentsValid(String name, String code, String sign) {
         return name == null || name.isEmpty() || code == null || code.isEmpty() || sign == null || sign.isEmpty();
-    }
-
-    private CurrencyService createCurrencyService() {
-        CurrencyMapper currencyMapper = new CurrencyMapper();
-        CurrencyDAO currencyDAO = new CurrencyDAO();
-        return new CurrencyService(currencyDAO, currencyMapper);
     }
 }

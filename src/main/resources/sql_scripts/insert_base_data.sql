@@ -20,4 +20,12 @@ INSERT INTO ExchangeRates (BaseCurrencyId, TargetCurrencyId, Rate)
 VALUES (3, 1, 0.1234567);
 
 PRAGMA foreign_keys = ON;
+INSERT INTO ExchangeRates (BaseCurrencyId, TargetCurrencyId, Rate)
+VALUES (2, 3, 43.2342424);
+
+PRAGMA foreign_keys = ON;
 SELECT BaseCurrencyId from ExchangeRates;
+
+
+PRAGMA foreign_keys = ON;
+SELECT ID, BaseCurrencyId, TargetCurrencyId, Rate FROM ExchangeRates WHERE BaseCurrencyId = 1 AND TargetCurrencyId = 2;

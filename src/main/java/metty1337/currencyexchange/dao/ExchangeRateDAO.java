@@ -4,27 +4,30 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import metty1337.currencyexchange.exceptions.DatabaseException;
 import metty1337.currencyexchange.exceptions.ExceptionMessages;
+import metty1337.currencyexchange.exceptions.ExchangeRateAlreadyExistsException;
+import metty1337.currencyexchange.exceptions.ExchangeRateDoesntExistException;
 import metty1337.currencyexchange.models.ExchangeRate;
 import metty1337.currencyexchange.util.DatabaseConnection;
 import metty1337.currencyexchange.util.ExchangeRatesColumns;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 
 @AllArgsConstructor(access = AccessLevel.PUBLIC)
 public class ExchangeRateDAO {
-    private static final String sqlSelectAllExchangeRates = "SELECT ID, BaseCurrencyId, TargetCurrencyId, Rate FROM ExchangeRates";
+    private static final String SELECT_ALL_EXCHANGE_RATES = "SELECT ID, BaseCurrencyId, TargetCurrencyId, Rate FROM ExchangeRates";
+    private static final String SELECT_EXCHANGE_RATE_BY_CURRENCY_IDS = "SELECT ID, BaseCurrencyId, TargetCurrencyId, Rate FROM ExchangeRates WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?";
+    private static final String INSERT_INTO_EXCHANGE_RATE = "INSERT INTO ExchangeRates (BaseCurrencyId, TargetCurrencyId, Rate) VALUES (?, ?, ?)";
+    private static final String SELECT_EXCHANGE_RATE_BY_ID = "SELECT ID, BaseCurrencyId, TargetCurrencyId, Rate FROM ExchangeRates WHERE Id = ?";
+    private static final int ERROR_FOR_CONSTRAINT_VIOLATION = 19;
 
     public List<ExchangeRate> findAll() {
         List<ExchangeRate> exchangeRates = new ArrayList<>();
         try (Connection connection = DatabaseConnection.getConnection();
              Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(sqlSelectAllExchangeRates)) {
+             ResultSet resultSet = statement.executeQuery(SELECT_ALL_EXCHANGE_RATES)) {
 
             while (resultSet.next()) {
                 ExchangeRate exchangeRate = mapRow(resultSet);
@@ -32,7 +35,63 @@ public class ExchangeRateDAO {
             }
             return exchangeRates;
         } catch (SQLException e) {
-            throw new DatabaseException(ExceptionMessages.DatabaseException.getMessage(), e);
+            throw new DatabaseException(ExceptionMessages.DATABASE_EXCEPTION.getMessage(), e);
+        }
+    }
+
+    public ExchangeRate findByCurrencyIds(Integer baseCurrencyId, Integer targetCurrencyId) {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_EXCHANGE_RATE_BY_CURRENCY_IDS);) {
+            preparedStatement.setInt(1, baseCurrencyId);
+            preparedStatement.setInt(2, targetCurrencyId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return mapRow(resultSet);
+                } else {
+                    throw new ExchangeRateDoesntExistException(ExceptionMessages.EXCHANGE_RATE_DOESNT_EXISTS.getMessage());
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException(ExceptionMessages.DATABASE_EXCEPTION.getMessage(), e);
+        }
+    }
+
+    public void save(ExchangeRate exchangeRate) {
+        Integer baseCurrencyId = exchangeRate.getBaseCurrencyID();
+        Integer targetCurrencyId = exchangeRate.getTargetCurrencyID();
+        double rate = exchangeRate.getRate();
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_INTO_EXCHANGE_RATE);) {
+            preparedStatement.setInt(1, baseCurrencyId);
+            preparedStatement.setInt(2, targetCurrencyId);
+            preparedStatement.setDouble(3, rate);
+
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            if (e.getErrorCode() == ERROR_FOR_CONSTRAINT_VIOLATION) {
+                throw new ExchangeRateAlreadyExistsException(ExceptionMessages.EXCHANGE_RATE_ALREADY_EXISTS.getMessage(), e);
+            } else {
+                throw new DatabaseException(ExceptionMessages.DATABASE_EXCEPTION.getMessage(), e);
+            }
+        }
+    }
+
+    public ExchangeRate findById(Integer id) {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_EXCHANGE_RATE_BY_ID)) {
+
+            preparedStatement.setInt(1, id);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return mapRow(resultSet);
+                } else {
+                    throw new ExchangeRateDoesntExistException(ExceptionMessages.EXCHANGE_RATE_DOESNT_EXISTS.getMessage());
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException(ExceptionMessages.DATABASE_EXCEPTION.getMessage(), e);
         }
     }
 
