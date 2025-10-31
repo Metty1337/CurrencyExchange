@@ -21,6 +21,7 @@ public class ExchangeRateDAO {
     private static final String SELECT_EXCHANGE_RATE_BY_CURRENCY_IDS = "SELECT ID, BaseCurrencyId, TargetCurrencyId, Rate FROM ExchangeRates WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?";
     private static final String INSERT_INTO_EXCHANGE_RATE = "INSERT INTO ExchangeRates (BaseCurrencyId, TargetCurrencyId, Rate) VALUES (?, ?, ?)";
     private static final String SELECT_EXCHANGE_RATE_BY_ID = "SELECT ID, BaseCurrencyId, TargetCurrencyId, Rate FROM ExchangeRates WHERE Id = ?";
+    private static final String UPDATE_EXCHANGE_RATE_BY_ID = "UPDATE ExchangeRates SET Rate = ? WHERE ID = ?";
     private static final int ERROR_FOR_CONSTRAINT_VIOLATION = 19;
 
     public List<ExchangeRate> findAll() {
@@ -90,6 +91,20 @@ public class ExchangeRateDAO {
                     throw new ExchangeRateDoesntExistException(ExceptionMessages.EXCHANGE_RATE_DOESNT_EXISTS.getMessage());
                 }
             }
+        } catch (SQLException e) {
+            throw new DatabaseException(ExceptionMessages.DATABASE_EXCEPTION.getMessage(), e);
+        }
+    }
+
+    public void update(ExchangeRate exchangeRate) {
+        Integer Id = exchangeRate.getID();
+        double rate = exchangeRate.getRate();
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_EXCHANGE_RATE_BY_ID)) {
+            preparedStatement.setDouble(1, rate);
+            preparedStatement.setInt(2, Id);
+            preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new DatabaseException(ExceptionMessages.DATABASE_EXCEPTION.getMessage(), e);
         }

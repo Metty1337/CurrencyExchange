@@ -29,22 +29,29 @@ public class ExchangeRateService {
     }
 
     public ExchangeRateDTO getExchangeRateByCodes(String baseCurrencyCode, String targetCurrencyCode) {
-            CurrencyDTO baseCurrencyDTO = currencyService.getCurrencyByCode(baseCurrencyCode);
-            CurrencyDTO targetCurrencyDTO = currencyService.getCurrencyByCode(targetCurrencyCode);
+        CurrencyDTO baseCurrencyDTO = currencyService.getCurrencyByCode(baseCurrencyCode);
+        CurrencyDTO targetCurrencyDTO = currencyService.getCurrencyByCode(targetCurrencyCode);
 
-            Integer baseCurrencyID = baseCurrencyDTO.getId();
-            Integer targetCurrencyID = targetCurrencyDTO.getId();
+        Integer baseCurrencyID = baseCurrencyDTO.getId();
+        Integer targetCurrencyID = targetCurrencyDTO.getId();
 
-            ExchangeRate exchangeRate = exchangeRateDAO.findByCurrencyIds(baseCurrencyID, targetCurrencyID);
+        ExchangeRate exchangeRate = exchangeRateDAO.findByCurrencyIds(baseCurrencyID, targetCurrencyID);
 
-            return getExchangeRateDTO(exchangeRate);
+        return getExchangeRateDTO(exchangeRate);
     }
 
     public ExchangeRateDTO createExchangeRate(String baseCurrencyCode, String targetCurrencyCode, double rate) {
-            CurrencyDTO baseCurrencyDTO = currencyService.getCurrencyByCode(baseCurrencyCode);
-            CurrencyDTO targetCurrencyDTO = currencyService.getCurrencyByCode(targetCurrencyCode);
-            ExchangeRate exchangeRate = new ExchangeRate(null, baseCurrencyDTO.getId(), targetCurrencyDTO.getId(), rate);
-            exchangeRateDAO.save(exchangeRate);
+        CurrencyDTO baseCurrencyDTO = currencyService.getCurrencyByCode(baseCurrencyCode);
+        CurrencyDTO targetCurrencyDTO = currencyService.getCurrencyByCode(targetCurrencyCode);
+        ExchangeRate exchangeRate = new ExchangeRate(null, baseCurrencyDTO.getId(), targetCurrencyDTO.getId(), rate);
+        exchangeRateDAO.save(exchangeRate);
+        return getExchangeRateByCodes(baseCurrencyCode, targetCurrencyCode);
+    }
+
+    public ExchangeRateDTO changeRate(String baseCurrencyCode, String targetCurrencyCode, double rate) {
+            ExchangeRateDTO exchangeRateDTO = getExchangeRateByCodes(baseCurrencyCode, targetCurrencyCode);
+            ExchangeRate exchangeRate = new ExchangeRate(exchangeRateDTO.getId(), exchangeRateDTO.getBaseCurrency().getId(), exchangeRateDTO.getTargetCurrency().getId(), rate);
+            exchangeRateDAO.update(exchangeRate);
             return getExchangeRateByCodes(baseCurrencyCode, targetCurrencyCode);
     }
 
