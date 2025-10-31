@@ -17,11 +17,11 @@ import java.util.List;
 @WebServlet(name = "CurrenciesServlet", value = "/currencies")
 public class CurrenciesServlet extends HttpServlet {
     private CurrencyService currencyService;
-    public static final String PARAMETER_NAME = "name";
-    public static final String PARAMETER_CODE = "code";
-    public static final String PARAMETER_SIGN = "sign";
-    public static final String ERROR_400 = "A required field is missing";
-    public static final String ERROR_409 = "Currency with this code already exists";
+    private static final String PARAMETER_NAME = "name";
+    private static final String PARAMETER_CODE = "code";
+    private static final String PARAMETER_SIGN = "sign";
+    private static final String ERROR_400 = "A required field is missing";
+    private static final String ERROR_409 = "Currency with this code already exists";
 
     @Override
     public void init() {

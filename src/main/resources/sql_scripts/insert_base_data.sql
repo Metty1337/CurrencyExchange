@@ -29,3 +29,6 @@ SELECT BaseCurrencyId from ExchangeRates;
 
 PRAGMA foreign_keys = ON;
 SELECT ID, BaseCurrencyId, TargetCurrencyId, Rate FROM ExchangeRates WHERE BaseCurrencyId = 1 AND TargetCurrencyId = 2;
+
+PRAGMA foreign_keys = ON;
+SELECT COUNT(ID) FROM ExchangeRates WHERE BaseCurrencyId = 2 AND TargetCurrencyId = 4;

@@ -24,9 +24,9 @@ public class ExchangeRatesServlet extends HttpServlet {
     private static final String PARAMETER_BASE_CURRENCY_CODE = "baseCurrencyCode";
     private static final String PARAMETER_TARGET_CURRENCY_CODE = "targetCurrencyCode";
     private static final String PARAMETER_RATE = "rate";
-    public static final String ERROR_400 = "A required field is missing";
-    public static final String ERROR_409 = "Exchange rate already exists";
-    public static final String ERROR_404 = "One (or both) currencies from the currency pair do not exist in the database";
+    private static final String ERROR_400 = "A required field is missing";
+    private static final String ERROR_409 = "Exchange rate already exists";
+    private static final String ERROR_404 = "One (or both) currencies from the currency pair do not exist in the database";
 
     private ExchangeRateService exchangeRateService;
 
