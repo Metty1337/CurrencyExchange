@@ -6,7 +6,6 @@ import metty1337.currencyexchange.exceptions.DatabaseException;
 import metty1337.currencyexchange.exceptions.ExceptionMessages;
 import org.flywaydb.core.Flyway;
 
-import java.nio.file.Paths;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DatabaseMigrator {

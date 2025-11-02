@@ -13,6 +13,7 @@ import metty1337.currencyexchange.service.ExchangeRateService;
 import metty1337.currencyexchange.util.JsonManager;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @WebServlet(value = "/exchangeRate/*")
 public class ExchangeRateServlet extends HttpServlet {
@@ -41,7 +42,7 @@ public class ExchangeRateServlet extends HttpServlet {
     protected void doPatch(HttpServletRequest request, HttpServletResponse response) {
         String baseCurrencyCode = request.getAttribute(BASE_CURRENCY_CODE_ATTRIBUTE).toString();
         String targetCurrencyCode = request.getAttribute(TARGET_CURRENCY_CODE_ATTRIBUTE).toString();
-        BigDecimal rate = new BigDecimal(request.getAttribute(RATE_ATTRIBUTE).toString());
+        BigDecimal rate = new BigDecimal(request.getAttribute(RATE_ATTRIBUTE).toString()).setScale(6, RoundingMode.HALF_UP);
         ExchangeRateService exchangeRateService = ExchangeRateServiceFactory.createExchangeRateService();
         try {
             ExchangeRateDTO exchangeRateDTO = exchangeRateService.changeRate(baseCurrencyCode, targetCurrencyCode, rate);

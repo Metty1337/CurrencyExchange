@@ -8,7 +8,6 @@ import metty1337.currencyexchange.util.JsonManager;
 import metty1337.currencyexchange.util.ValidatorManager;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 
 @WebFilter("/exchange")
 public class ExchangeFilter implements Filter {

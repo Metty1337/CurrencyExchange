@@ -11,15 +11,13 @@ import metty1337.currencyexchange.factory.CurrencyServiceFactory;
 import metty1337.currencyexchange.service.CurrencyService;
 import metty1337.currencyexchange.util.JsonManager;
 
-import java.io.IOException;
-
 @WebServlet(value = "/currency/*")
 public class CurrencyServlet extends HttpServlet {
     private static final String ERROR_404_MESSAGE = "Currency Code Is Not Found";
     private static final String CODE_ATTRIBUTE = "code";
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         String code = request.getAttribute(CODE_ATTRIBUTE).toString();
         CurrencyService currencyService = CurrencyServiceFactory.createCurrencyService();
         try {

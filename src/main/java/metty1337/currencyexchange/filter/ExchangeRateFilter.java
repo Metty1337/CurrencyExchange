@@ -10,6 +10,11 @@ import metty1337.currencyexchange.util.ValidatorManager;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @WebFilter("/exchangeRate/*")
 public class ExchangeRateFilter implements Filter {
@@ -36,8 +41,12 @@ public class ExchangeRateFilter implements Filter {
                 getCodesAndSetThemAsAttributes(request, input);
                 filterChain.doFilter(request, response);
             }
-        } else if (method.equals(PATCH_REQUEST)) {
-            String rateInput = request.getParameter(RATE_PARAMETER);
+        }
+        else if (method.equals(PATCH_REQUEST))
+        {
+            Map<String, String> formData = parseFormData(request);
+            String rateInput = formData.get(RATE_PARAMETER);
+//            String rateInput = request.getParameter(RATE_PARAMETER);
             if (!ValidatorManager.isCurrencyCodesRequestValid(input) || !ValidatorManager.isRateInputValid(rateInput)) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 JsonManager.writeJsonError(response, ERROR_400);
@@ -48,6 +57,20 @@ public class ExchangeRateFilter implements Filter {
                 filterChain.doFilter(request, response);
             }
         }
+    }
+
+    private Map<String, String> parseFormData(HttpServletRequest request) throws IOException {
+        String body = request.getReader().lines().collect(Collectors.joining());
+        Map<String, String> formData = new HashMap<>();
+        for (String pair : body.split("&")) {
+            String[] keyValue = pair.split("=", 2);
+            if (keyValue.length == 2) {
+                String key = URLDecoder.decode(keyValue[0], StandardCharsets.UTF_8);
+                String value = URLDecoder.decode(keyValue[1], StandardCharsets.UTF_8);
+                formData.put(key, value);
+            }
+        }
+        return formData;
     }
 
     private void getCodesAndSetThemAsAttributes(HttpServletRequest request, String input) {

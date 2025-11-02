@@ -3,7 +3,6 @@ package metty1337.currencyexchange.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.jackson.Jacksonized;
 
 @AllArgsConstructor
 @Setter

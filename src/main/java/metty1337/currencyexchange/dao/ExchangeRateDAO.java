@@ -21,7 +21,6 @@ public class ExchangeRateDAO {
     private static final String SELECT_ALL_EXCHANGE_RATES = "SELECT ID, BaseCurrencyId, TargetCurrencyId, Rate FROM ExchangeRates";
     private static final String SELECT_EXCHANGE_RATE_BY_CURRENCY_IDS = "SELECT ID, BaseCurrencyId, TargetCurrencyId, Rate FROM ExchangeRates WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?";
     private static final String INSERT_INTO_EXCHANGE_RATE = "INSERT INTO ExchangeRates (BaseCurrencyId, TargetCurrencyId, Rate) VALUES (?, ?, ?)";
-    private static final String SELECT_EXCHANGE_RATE_BY_ID = "SELECT ID, BaseCurrencyId, TargetCurrencyId, Rate FROM ExchangeRates WHERE Id = ?";
     private static final String UPDATE_EXCHANGE_RATE_BY_ID = "UPDATE ExchangeRates SET Rate = ? WHERE ID = ?";
     private static final String SELECT_COUNT_EXCHANGE_RATES_BY_IDS = "SELECT COUNT(ID) FROM ExchangeRates WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?";
     private static final int ERROR_FOR_CONSTRAINT_VIOLATION = 19;
@@ -44,7 +43,7 @@ public class ExchangeRateDAO {
 
     public ExchangeRate findByCurrencyIds(Integer baseCurrencyId, Integer targetCurrencyId) {
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_EXCHANGE_RATE_BY_CURRENCY_IDS);) {
+             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_EXCHANGE_RATE_BY_CURRENCY_IDS)) {
             preparedStatement.setInt(1, baseCurrencyId);
             preparedStatement.setInt(2, targetCurrencyId);
 
@@ -66,7 +65,7 @@ public class ExchangeRateDAO {
         BigDecimal rate = exchangeRate.getRate();
 
         try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_INTO_EXCHANGE_RATE);) {
+             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_INTO_EXCHANGE_RATE)) {
             preparedStatement.setInt(1, baseCurrencyId);
             preparedStatement.setInt(2, targetCurrencyId);
             preparedStatement.setBigDecimal(3, rate);
@@ -78,23 +77,6 @@ public class ExchangeRateDAO {
             } else {
                 throw new DatabaseException(ExceptionMessages.DATABASE_EXCEPTION.getMessage(), e);
             }
-        }
-    }
-
-    public ExchangeRate findById(Integer id) {
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_EXCHANGE_RATE_BY_ID)) {
-
-            preparedStatement.setInt(1, id);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return mapRow(resultSet);
-                } else {
-                    throw new ExchangeRateDoesntExistException(ExceptionMessages.EXCHANGE_RATE_DOESNT_EXISTS.getMessage());
-                }
-            }
-        } catch (SQLException e) {
-            throw new DatabaseException(ExceptionMessages.DATABASE_EXCEPTION.getMessage(), e);
         }
     }
 

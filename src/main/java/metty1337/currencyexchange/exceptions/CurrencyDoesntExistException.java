@@ -5,7 +5,4 @@ public class CurrencyDoesntExistException extends RuntimeException {
         super(message);
     }
 
-    public CurrencyDoesntExistException(String message, Throwable cause) {
-        super(message, cause);
-    }
 }
