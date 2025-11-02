@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @AllArgsConstructor
 @Setter
 @Getter
@@ -11,5 +13,5 @@ public class ExchangeRateDTO {
     private Integer id;
     private CurrencyDTO baseCurrency;
     private CurrencyDTO targetCurrency;
-    private double rate;
+    private BigDecimal rate;
 }

@@ -13,6 +13,7 @@ import metty1337.currencyexchange.service.ExchangeRateService;
 import metty1337.currencyexchange.util.JsonManager;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 
 @WebServlet(name = "ExchangeServlet", value = "/exchange")
 public class ExchangeServlet extends HttpServlet {
@@ -34,7 +35,7 @@ public class ExchangeServlet extends HttpServlet {
 
         String baseCurrencyCode = request.getParameter(PARAMETER_BASE_CURRENCY_CODE);
         String targetCurrencyCode = request.getParameter(PARAMETER_TARGET_CURRENCY_CODE);
-        double amount = parseRateRequest(request.getParameter(PARAMETER_AMOUNT));
+        BigDecimal amount = parseRateRequest(request.getParameter(PARAMETER_AMOUNT));
 
         if (!isRequestValid(baseCurrencyCode, targetCurrencyCode, amount)) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -51,11 +52,6 @@ public class ExchangeServlet extends HttpServlet {
         }
     }
 
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
-    }
-
     private void handleErrors(RuntimeException e, HttpServletResponse response) {
         if (e instanceof ExchangeRateDoesntExistException || e instanceof CurrencyDoesntExistException) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -68,15 +64,15 @@ public class ExchangeServlet extends HttpServlet {
         }
     }
 
-    private double parseRateRequest(String rate) {
+    private BigDecimal parseRateRequest(String rate) {
         try {
-            return Double.parseDouble(rate);
+            return new BigDecimal(rate);
         } catch (NumberFormatException | NullPointerException e) {
-            return 0.0;
+            return BigDecimal.ZERO;
         }
     }
 
-    private boolean isRequestValid(String baseCurrencyCode, String targetCurrencyCode, Double amount) {
-        return baseCurrencyCode != null && targetCurrencyCode != null && amount != 0.0 && !baseCurrencyCode.isBlank() && !targetCurrencyCode.isBlank();
+    private boolean isRequestValid(String baseCurrencyCode, String targetCurrencyCode, BigDecimal amount) {
+        return baseCurrencyCode != null && targetCurrencyCode != null && !(amount.compareTo(BigDecimal.ZERO) == 0) && !baseCurrencyCode.isBlank() && !targetCurrencyCode.isBlank();
     }
 }

@@ -16,10 +16,11 @@ import metty1337.currencyexchange.service.ExchangeRateService;
 import metty1337.currencyexchange.util.JsonManager;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
-@WebServlet(name = "ExchangeRates", value = "/exchangeRates")
+@WebServlet(value = "/exchangeRates")
 public class ExchangeRatesServlet extends HttpServlet {
     private static final String PARAMETER_BASE_CURRENCY_CODE = "baseCurrencyCode";
     private static final String PARAMETER_TARGET_CURRENCY_CODE = "targetCurrencyCode";
@@ -57,7 +58,7 @@ public class ExchangeRatesServlet extends HttpServlet {
 
         String baseCurrencyCode = request.getParameter(PARAMETER_BASE_CURRENCY_CODE);
         String targetCurrencyCode = request.getParameter(PARAMETER_TARGET_CURRENCY_CODE);
-        double rate = parseRateRequest(request.getParameter(PARAMETER_RATE));
+        BigDecimal rate = parseRateRequest(request.getParameter(PARAMETER_RATE));
 
         if (!isExchangeRateComponentsValid(baseCurrencyCode, targetCurrencyCode, rate)) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -87,15 +88,15 @@ public class ExchangeRatesServlet extends HttpServlet {
 
     }
 
-    private double parseRateRequest(String rate) {
+    private BigDecimal parseRateRequest(String rate) {
         try {
-            return Double.parseDouble(rate);
+            return new BigDecimal(rate);
         } catch (NumberFormatException | NullPointerException e) {
-            return 0.0;
+            return BigDecimal.ZERO;
         }
     }
 
-    private boolean isExchangeRateComponentsValid(String baseCurrencyCode, String targetCurrencyCode, Double rate) {
-        return baseCurrencyCode != null && targetCurrencyCode != null && rate != 0.0 && !baseCurrencyCode.isBlank() && !targetCurrencyCode.isBlank();
+    private boolean isExchangeRateComponentsValid(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
+        return baseCurrencyCode != null && targetCurrencyCode != null && (!(rate.compareTo(BigDecimal.ZERO) == 0)) && !baseCurrencyCode.isBlank() && !targetCurrencyCode.isBlank();
     }
 }

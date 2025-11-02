@@ -10,6 +10,7 @@ import metty1337.currencyexchange.models.ExchangeRate;
 import metty1337.currencyexchange.util.DatabaseConnection;
 import metty1337.currencyexchange.util.ExchangeRatesColumns;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,13 +63,13 @@ public class ExchangeRateDAO {
     public void save(ExchangeRate exchangeRate) {
         Integer baseCurrencyId = exchangeRate.getBaseCurrencyID();
         Integer targetCurrencyId = exchangeRate.getTargetCurrencyID();
-        double rate = exchangeRate.getRate();
+        BigDecimal rate = exchangeRate.getRate();
 
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(INSERT_INTO_EXCHANGE_RATE);) {
             preparedStatement.setInt(1, baseCurrencyId);
             preparedStatement.setInt(2, targetCurrencyId);
-            preparedStatement.setDouble(3, rate);
+            preparedStatement.setBigDecimal(3, rate);
 
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -99,11 +100,11 @@ public class ExchangeRateDAO {
 
     public void update(ExchangeRate exchangeRate) {
         Integer Id = exchangeRate.getID();
-        double rate = exchangeRate.getRate();
+        BigDecimal rate = exchangeRate.getRate();
 
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_EXCHANGE_RATE_BY_ID)) {
-            preparedStatement.setDouble(1, rate);
+            preparedStatement.setBigDecimal(1, rate);
             preparedStatement.setInt(2, Id);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -134,7 +135,7 @@ public class ExchangeRateDAO {
                     resultSet.getInt(ExchangeRatesColumns.ID.getColumnName()),
                     resultSet.getInt(ExchangeRatesColumns.BASE_CURRENCY_ID.getColumnName()),
                     resultSet.getInt(ExchangeRatesColumns.TARGET_CURRENCY_ID.getColumnName()),
-                    resultSet.getDouble(ExchangeRatesColumns.RATE.getColumnName())
+                    resultSet.getBigDecimal(ExchangeRatesColumns.RATE.getColumnName())
             );
         } catch (SQLException e) {
             throw new RuntimeException(e);

@@ -7,72 +7,49 @@ import jakarta.servlet.http.HttpServletResponse;
 import metty1337.currencyexchange.dto.ExchangeRateDTO;
 import metty1337.currencyexchange.errors.ErrorMessages;
 import metty1337.currencyexchange.exceptions.CurrencyDoesntExistException;
-import metty1337.currencyexchange.exceptions.DatabaseException;
 import metty1337.currencyexchange.exceptions.ExchangeRateDoesntExistException;
 import metty1337.currencyexchange.factory.ExchangeRateServiceFactory;
 import metty1337.currencyexchange.service.ExchangeRateService;
 import metty1337.currencyexchange.util.JsonManager;
 
-import java.io.IOException;
+import java.math.BigDecimal;
 
-@WebServlet(name = "ExchangeRateServlet", value = "/exchangeRate/*")
+@WebServlet(value = "/exchangeRate/*")
 public class ExchangeRateServlet extends HttpServlet {
-    private static final String ERROR_400 = "Currency Code Is Missing at the address";
     private static final String ERROR_404 = "Exchange Rate Not Found";
-    private static final String PARAMETER_RATE = "rate";
-    private ExchangeRateService exchangeRateService;
-
-    @Override
-    public void init() {
-        this.exchangeRateService = ExchangeRateServiceFactory.createExchangeRateService();
-    }
+    private static final String RATE_ATTRIBUTE = "rate";
+    private static final String BASE_CURRENCY_CODE_ATTRIBUTE = "baseCurrencyCode";
+    private static final String TARGET_CURRENCY_CODE_ATTRIBUTE = "targetCurrencyCode";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) {
-        JsonManager.prepareResponse(response);
+        String baseCurrencyCode = request.getAttribute(BASE_CURRENCY_CODE_ATTRIBUTE).toString();
+        String targetCurrencyCode = request.getAttribute(TARGET_CURRENCY_CODE_ATTRIBUTE).toString();
 
-        String input = request.getPathInfo();
-        String baseCurrencyCode = getBaseCurrencyCode(input);
-        String targetCurrencyCode = getTargetCurrencyCode(input);
-
-        if (!isCodesValid(baseCurrencyCode, targetCurrencyCode)) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            log(ERROR_400);
-            JsonManager.writeJsonError(response, ERROR_400);
-        } else {
-            try {
-                ExchangeRateDTO exchangeRateDTO = exchangeRateService.getExchangeRateByCodes(baseCurrencyCode, targetCurrencyCode);
-                response.setStatus(HttpServletResponse.SC_OK);
-                JsonManager.writeJsonResult(response, exchangeRateDTO);
-            } catch (RuntimeException e) {
-                handleErrors(e, response);
-            }
+        ExchangeRateService exchangeRateService = ExchangeRateServiceFactory.createExchangeRateService();
+        try {
+            ExchangeRateDTO exchangeRateDTO = exchangeRateService.getExchangeRateByCodes(baseCurrencyCode, targetCurrencyCode);
+            response.setStatus(HttpServletResponse.SC_OK);
+            JsonManager.writeJsonResult(response, exchangeRateDTO);
+        } catch (RuntimeException e) {
+            handleErrors(e, response);
         }
     }
 
+
     @Override
     protected void doPatch(HttpServletRequest request, HttpServletResponse response) {
-        JsonManager.prepareResponse(response);
-
-        String inputCodes = request.getPathInfo();
-        String baseCurrencyCode = getBaseCurrencyCode(inputCodes);
-        String targetCurrencyCode = getTargetCurrencyCode(inputCodes);
-        double rate = parseRateRequest(request.getParameter(PARAMETER_RATE));
-
-        if (!isExchangeRateComponentsValid(baseCurrencyCode, targetCurrencyCode, rate)) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            log(ERROR_400);
-            JsonManager.writeJsonError(response, ERROR_400);
-        } else {
-            try {
-                ExchangeRateDTO exchangeRateDTO = exchangeRateService.changeRate(baseCurrencyCode, targetCurrencyCode, rate);
-                response.setStatus(HttpServletResponse.SC_OK);
-                JsonManager.writeJsonResult(response, exchangeRateDTO);
-            } catch (RuntimeException e) {
-                handleErrors(e, response);
-            }
+        String baseCurrencyCode = request.getAttribute(BASE_CURRENCY_CODE_ATTRIBUTE).toString();
+        String targetCurrencyCode = request.getAttribute(TARGET_CURRENCY_CODE_ATTRIBUTE).toString();
+        BigDecimal rate = new BigDecimal(request.getAttribute(RATE_ATTRIBUTE).toString());
+        ExchangeRateService exchangeRateService = ExchangeRateServiceFactory.createExchangeRateService();
+        try {
+            ExchangeRateDTO exchangeRateDTO = exchangeRateService.changeRate(baseCurrencyCode, targetCurrencyCode, rate);
+            response.setStatus(HttpServletResponse.SC_OK);
+            JsonManager.writeJsonResult(response, exchangeRateDTO);
+        } catch (RuntimeException e) {
+            handleErrors(e, response);
         }
-
     }
 
     private void handleErrors(RuntimeException e, HttpServletResponse response) {
@@ -86,38 +63,11 @@ public class ExchangeRateServlet extends HttpServlet {
             JsonManager.writeJsonError(response, ErrorMessages.ERROR_500.getMessage());
         }
     }
-
-    private String getBaseCurrencyCode(String input) {
-        if (isInputValid(input)) {
-            return input.substring(1, 4);
-        }
-        return "";
-    }
-
-    private String getTargetCurrencyCode(String input) {
-        if (isInputValid(input)) {
-            return input.substring(4);
-        }
-        return "";
-    }
-
-    private boolean isInputValid(String input) {
-        return input != null && input.length() > 6;
-    }
-
-    private boolean isCodesValid(String baseCurrencyCode, String targetCurrencyCode) {
-        return !baseCurrencyCode.isBlank() && !targetCurrencyCode.isBlank();
-    }
-
-    private double parseRateRequest(String rate) {
-        try {
-            return Double.parseDouble(rate);
-        } catch (NumberFormatException | NullPointerException e) {
-            return 0.0;
-        }
-    }
-
-    private boolean isExchangeRateComponentsValid(String baseCurrencyCode, String targetCurrencyCode, Double rate) {
-        return baseCurrencyCode != null && targetCurrencyCode != null && rate != 0.0 && !baseCurrencyCode.isBlank() && !targetCurrencyCode.isBlank();
-    }
 }
+
+
+
+
+
+
+

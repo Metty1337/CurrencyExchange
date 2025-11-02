@@ -8,6 +8,8 @@ import metty1337.currencyexchange.dto.ExchangeDTO;
 import metty1337.currencyexchange.dto.ExchangeRateDTO;
 import metty1337.currencyexchange.models.ExchangeRate;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,7 +41,7 @@ public class ExchangeRateService {
         return getExchangeRateDTO(exchangeRate);
     }
 
-    public ExchangeRateDTO createExchangeRate(String baseCurrencyCode, String targetCurrencyCode, double rate) {
+    public ExchangeRateDTO createExchangeRate(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
         CurrencyDTO baseCurrencyDTO = currencyService.getCurrencyByCode(baseCurrencyCode);
         CurrencyDTO targetCurrencyDTO = currencyService.getCurrencyByCode(targetCurrencyCode);
         ExchangeRate exchangeRate = new ExchangeRate(null, baseCurrencyDTO.getId(), targetCurrencyDTO.getId(), rate);
@@ -47,14 +49,14 @@ public class ExchangeRateService {
         return getExchangeRateByCodes(baseCurrencyCode, targetCurrencyCode);
     }
 
-    public ExchangeRateDTO changeRate(String baseCurrencyCode, String targetCurrencyCode, double rate) {
+    public ExchangeRateDTO changeRate(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
         ExchangeRateDTO exchangeRateDTO = getExchangeRateByCodes(baseCurrencyCode, targetCurrencyCode);
         ExchangeRate exchangeRate = new ExchangeRate(exchangeRateDTO.getId(), exchangeRateDTO.getBaseCurrency().getId(), exchangeRateDTO.getTargetCurrency().getId(), rate);
         exchangeRateDAO.update(exchangeRate);
         return getExchangeRateByCodes(baseCurrencyCode, targetCurrencyCode);
     }
 
-    public ExchangeDTO exchange(String baseCurrencyCode, String targetCurrencyCode, double amount) {
+    public ExchangeDTO exchange(String baseCurrencyCode, String targetCurrencyCode, BigDecimal amount) {
         CurrencyDTO baseCurrencyDTO = currencyService.getCurrencyByCode(baseCurrencyCode);
         CurrencyDTO targetCurrencyDTO = currencyService.getCurrencyByCode(targetCurrencyCode);
         CurrencyDTO usdCurrencyDTO = currencyService.getCurrencyByCode(USD_CODE);
@@ -62,21 +64,21 @@ public class ExchangeRateService {
         int targetCurrencyID = targetCurrencyDTO.getId();
         int usdCurrencyID = usdCurrencyDTO.getId();
 
-        double rate = 0;
-        double convertedAmount = 0;
+        BigDecimal rate = BigDecimal.valueOf(0);
+        BigDecimal convertedAmount = BigDecimal.valueOf(0);
         if (isExchangeRateExist(baseCurrencyID, targetCurrencyID)) {
             ExchangeRateDTO exchangeRateDTO = getExchangeRateByCodes(baseCurrencyCode, targetCurrencyCode);
             rate = exchangeRateDTO.getRate();
-            convertedAmount = amount * rate;
+            convertedAmount = amount.multiply(rate);
         } else if (isExchangeRateExist(targetCurrencyID, baseCurrencyID)) {
             ExchangeRateDTO exchangeRateDTO = getExchangeRateByCodes(targetCurrencyCode, baseCurrencyCode);
-            rate = 1 / exchangeRateDTO.getRate();
-            convertedAmount = amount * rate;
+            rate = BigDecimal.ONE.divide(exchangeRateDTO.getRate(), 6, RoundingMode.HALF_UP);
+            convertedAmount = amount.multiply(rate);
         } else if (isExchangeRateExist(usdCurrencyID, baseCurrencyID) && isExchangeRateExist(usdCurrencyID, targetCurrencyID)) {
             ExchangeRateDTO usdToBaseCurrencyDTO = getExchangeRateByCodes(USD_CODE, baseCurrencyCode);
             ExchangeRateDTO usdToTargetCurrencyDTO = getExchangeRateByCodes(USD_CODE, targetCurrencyCode);
-            rate = usdToTargetCurrencyDTO.getRate() / usdToBaseCurrencyDTO.getRate();
-            convertedAmount = amount * rate;
+            rate = usdToTargetCurrencyDTO.getRate().divide(usdToBaseCurrencyDTO.getRate(), 6, RoundingMode.HALF_UP);
+            convertedAmount = amount.multiply(rate);
         }
 
         return new ExchangeDTO(baseCurrencyDTO, targetCurrencyDTO, rate, amount, convertedAmount);

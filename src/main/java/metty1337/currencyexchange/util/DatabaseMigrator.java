@@ -2,6 +2,8 @@ package metty1337.currencyexchange.util;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import metty1337.currencyexchange.exceptions.DatabaseException;
+import metty1337.currencyexchange.exceptions.ExceptionMessages;
 import org.flywaydb.core.Flyway;
 
 import java.nio.file.Paths;
@@ -13,7 +15,10 @@ public final class DatabaseMigrator {
                 .dataSource(URL, null, null)
                 .locations("classpath:db/migration")
                 .load();
-
-        flyway.migrate();
+        try {
+            flyway.migrate();
+        } catch (RuntimeException e) {
+            throw new DatabaseException(ExceptionMessages.DATABASE_EXCEPTION.getMessage(), e);
+        }
     }
 }

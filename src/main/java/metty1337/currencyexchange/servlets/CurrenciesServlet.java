@@ -14,24 +14,16 @@ import metty1337.currencyexchange.util.JsonManager;
 
 import java.util.List;
 
-@WebServlet(name = "CurrenciesServlet", value = "/currencies")
+@WebServlet(value = "/currencies")
 public class CurrenciesServlet extends HttpServlet {
-    private CurrencyService currencyService;
     private static final String PARAMETER_NAME = "name";
     private static final String PARAMETER_CODE = "code";
     private static final String PARAMETER_SIGN = "sign";
-    private static final String ERROR_400 = "A required field is missing";
     private static final String ERROR_409 = "Currency with this code already exists";
 
     @Override
-    public void init() {
-        this.currencyService = CurrencyServiceFactory.createCurrencyService();
-    }
-
-    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) {
-        JsonManager.prepareResponse(response);
-
+        CurrencyService currencyService = CurrencyServiceFactory.createCurrencyService();
         try {
             List<CurrencyDTO> currenciesDTO = currencyService.getCurrencies();
 
@@ -46,38 +38,27 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) {
-        JsonManager.prepareResponse(response);
+        String name = request.getAttribute(PARAMETER_NAME).toString();
+        String code = request.getAttribute(PARAMETER_CODE).toString();
+        String sign = request.getAttribute(PARAMETER_SIGN).toString();
 
-        String name = request.getParameter(PARAMETER_NAME);
-        String code = request.getParameter(PARAMETER_CODE);
-        String sign = request.getParameter(PARAMETER_SIGN);
-
-        if (isCurrencyComponentsValid(name, code, sign)) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            log(ERROR_400);
-            JsonManager.writeJsonError(response, ERROR_400);
-        } else {
-            CurrencyDTO currencyDTO = new CurrencyDTO(null, name, code, sign);
-            try {
-                currencyService.createCurrency(currencyDTO);
-                currencyDTO = currencyService.getCurrencyByCode(currencyDTO.getCode());
-                response.setStatus(HttpServletResponse.SC_CREATED);
-                JsonManager.writeJsonResult(response, currencyDTO);
-            } catch (RuntimeException e) {
-                if (e instanceof CurrencyAlreadyExistsException) {
-                    response.setStatus(HttpServletResponse.SC_CONFLICT);
-                    log(ERROR_409, e);
-                    JsonManager.writeJsonError(response, ERROR_409);
-                } else {
-                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                    log(ErrorMessages.ERROR_500.getMessage(), e);
-                    JsonManager.writeJsonError(response, ErrorMessages.ERROR_500.getMessage());
-                }
+        CurrencyService currencyService = CurrencyServiceFactory.createCurrencyService();
+        CurrencyDTO currencyDTO = new CurrencyDTO(null, name, code, sign);
+        try {
+            currencyService.createCurrency(currencyDTO);
+            currencyDTO = currencyService.getCurrencyByCode(currencyDTO.getCode());
+            response.setStatus(HttpServletResponse.SC_CREATED);
+            JsonManager.writeJsonResult(response, currencyDTO);
+        } catch (RuntimeException e) {
+            if (e instanceof CurrencyAlreadyExistsException) {
+                response.setStatus(HttpServletResponse.SC_CONFLICT);
+                log(ERROR_409, e);
+                JsonManager.writeJsonError(response, ERROR_409);
+            } else {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                log(ErrorMessages.ERROR_500.getMessage(), e);
+                JsonManager.writeJsonError(response, ErrorMessages.ERROR_500.getMessage());
             }
         }
-    }
-
-    private boolean isCurrencyComponentsValid(String name, String code, String sign) {
-        return name == null || name.isEmpty() || code == null || code.isEmpty() || sign == null || sign.isEmpty();
     }
 }

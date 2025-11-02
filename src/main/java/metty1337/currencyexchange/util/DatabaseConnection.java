@@ -13,17 +13,22 @@ import java.sql.Statement;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DatabaseConnection {
+    //    private static final String DB_URL = "jdbc:sqlite:/opt/tomcat/CurrencyExchange/data/sqlite/database.db";
     private static final String DB_URL = "jdbc:sqlite:C:\\Users\\novik\\IdeaProjects\\CurrencyExchange\\data\\db\\sqlite\\database.db";
     private static final String TURN_FOREIGN_KEYS_ON = "PRAGMA foreign_keys = ON;";
 
-    public static Connection getConnection() throws SQLException {
-        DatabaseMigrator.migrate(DB_URL);
-        Connection connection = DriverManager.getConnection(DB_URL);
+    public static Connection getConnection() {
+        try {
+            DatabaseMigrator.migrate(DB_URL);
+            Connection connection = DriverManager.getConnection(DB_URL);
 
-        try (Statement statement = connection.createStatement()) {
-            statement.execute(TURN_FOREIGN_KEYS_ON);
+            try (Statement statement = connection.createStatement()) {
+                statement.execute(TURN_FOREIGN_KEYS_ON);
+            }
+            return connection;
+        } catch (SQLException e) {
+            throw new DatabaseException(ExceptionMessages.DATABASE_EXCEPTION.getMessage(), e);
         }
-        return connection;
     }
 }
 
