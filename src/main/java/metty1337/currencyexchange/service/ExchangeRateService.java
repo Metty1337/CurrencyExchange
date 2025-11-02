@@ -69,16 +69,16 @@ public class ExchangeRateService {
         if (isExchangeRateExist(baseCurrencyID, targetCurrencyID)) {
             ExchangeRateDTO exchangeRateDTO = getExchangeRateByCodes(baseCurrencyCode, targetCurrencyCode);
             rate = exchangeRateDTO.getRate();
-            convertedAmount = amount.multiply(rate);
+            convertedAmount = amount.multiply(rate).setScale(6, RoundingMode.HALF_UP);
         } else if (isExchangeRateExist(targetCurrencyID, baseCurrencyID)) {
             ExchangeRateDTO exchangeRateDTO = getExchangeRateByCodes(targetCurrencyCode, baseCurrencyCode);
             rate = BigDecimal.ONE.divide(exchangeRateDTO.getRate(), 6, RoundingMode.HALF_UP);
-            convertedAmount = amount.multiply(rate);
+            convertedAmount = amount.multiply(rate).setScale(6, RoundingMode.HALF_UP);
         } else if (isExchangeRateExist(usdCurrencyID, baseCurrencyID) && isExchangeRateExist(usdCurrencyID, targetCurrencyID)) {
             ExchangeRateDTO usdToBaseCurrencyDTO = getExchangeRateByCodes(USD_CODE, baseCurrencyCode);
             ExchangeRateDTO usdToTargetCurrencyDTO = getExchangeRateByCodes(USD_CODE, targetCurrencyCode);
             rate = usdToTargetCurrencyDTO.getRate().divide(usdToBaseCurrencyDTO.getRate(), 6, RoundingMode.HALF_UP);
-            convertedAmount = amount.multiply(rate);
+            convertedAmount = amount.multiply(rate).setScale(6, RoundingMode.HALF_UP);
         }
 
         return new ExchangeDTO(baseCurrencyDTO, targetCurrencyDTO, rate, amount, convertedAmount);

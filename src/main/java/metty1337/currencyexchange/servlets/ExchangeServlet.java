@@ -14,6 +14,7 @@ import metty1337.currencyexchange.util.JsonManager;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @WebServlet(name = "ExchangeServlet", value = "/exchange")
 public class ExchangeServlet extends HttpServlet {
@@ -22,35 +23,23 @@ public class ExchangeServlet extends HttpServlet {
     private static final String PARAMETER_AMOUNT = "amount";
     private static final String ERROR_400 = "A required field is missing";
     private static final String ERROR_404 = "One (or both) currencies from the currency pair do not exist in the database";
-    private ExchangeRateService exchangeRateService;
-
-    @Override
-    public void init(){
-        this.exchangeRateService = ExchangeRateServiceFactory.createExchangeRateService();
-    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        JsonManager.prepareResponse(response);
+        ExchangeRateService exchangeRateService = ExchangeRateServiceFactory.createExchangeRateService();
+        String baseCurrencyCode = request.getAttribute(PARAMETER_BASE_CURRENCY_CODE).toString();
+        String targetCurrencyCode = request.getAttribute(PARAMETER_TARGET_CURRENCY_CODE).toString();
+        BigDecimal amount = new BigDecimal(request.getAttribute(PARAMETER_AMOUNT).toString()).setScale(6, RoundingMode.HALF_UP);
 
-        String baseCurrencyCode = request.getParameter(PARAMETER_BASE_CURRENCY_CODE);
-        String targetCurrencyCode = request.getParameter(PARAMETER_TARGET_CURRENCY_CODE);
-        BigDecimal amount = parseRateRequest(request.getParameter(PARAMETER_AMOUNT));
-
-        if (!isRequestValid(baseCurrencyCode, targetCurrencyCode, amount)) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            log(ERROR_400);
-            JsonManager.writeJsonError(response, ERROR_400);
-        } else {
-            try {
-                ExchangeDTO exchangeDTO = exchangeRateService.exchange(baseCurrencyCode, targetCurrencyCode, amount);
-                response.setStatus(HttpServletResponse.SC_OK);
-                JsonManager.writeJsonResult(response, exchangeDTO);
-            } catch (RuntimeException e) {
-                handleErrors(e, response);
-            }
+        try {
+            ExchangeDTO exchangeDTO = exchangeRateService.exchange(baseCurrencyCode, targetCurrencyCode, amount);
+            response.setStatus(HttpServletResponse.SC_OK);
+            JsonManager.writeJsonResult(response, exchangeDTO);
+        } catch (RuntimeException e) {
+            handleErrors(e, response);
         }
-    }
+
+    }   
 
     private void handleErrors(RuntimeException e, HttpServletResponse response) {
         if (e instanceof ExchangeRateDoesntExistException || e instanceof CurrencyDoesntExistException) {
@@ -62,17 +51,5 @@ public class ExchangeServlet extends HttpServlet {
             log(ErrorMessages.ERROR_500.getMessage());
             JsonManager.writeJsonError(response, ErrorMessages.ERROR_500.getMessage());
         }
-    }
-
-    private BigDecimal parseRateRequest(String rate) {
-        try {
-            return new BigDecimal(rate);
-        } catch (NumberFormatException | NullPointerException e) {
-            return BigDecimal.ZERO;
-        }
-    }
-
-    private boolean isRequestValid(String baseCurrencyCode, String targetCurrencyCode, BigDecimal amount) {
-        return baseCurrencyCode != null && targetCurrencyCode != null && !(amount.compareTo(BigDecimal.ZERO) == 0) && !baseCurrencyCode.isBlank() && !targetCurrencyCode.isBlank();
     }
 }

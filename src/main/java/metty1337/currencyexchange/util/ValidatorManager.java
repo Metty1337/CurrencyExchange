@@ -29,11 +29,11 @@ public final class ValidatorManager {
     }
 
     public static boolean isExchangeRateInputValid(String baseCurrencyCode, String targetCurrencyCode, String rate){
-//        boolean currencyCodeMatches = isCurrencyCodeRequestValid(baseCurrencyCode);
-//        boolean targetCurrencyCodeMatches = isCurrencyCodeRequestValid(targetCurrencyCode);
-//        boolean rateMatches = isRateInputValid(rate);
-//        return currencyCodeMatches && targetCurrencyCodeMatches && rateMatches;
         return isCurrencyCodeValid(baseCurrencyCode) && isCurrencyCodeValid(targetCurrencyCode) && isRateInputValid(rate);
+    }
+
+    public static boolean isExchangeInputValid(String baseCurrencyCode, String targetCurrencyCode, String amount){
+        return isCurrencyCodeValid(baseCurrencyCode) && isCurrencyCodeValid(targetCurrencyCode) && isRateInputValid(amount);
     }
 
     private static boolean isCurrencyCodeValid(String code){
