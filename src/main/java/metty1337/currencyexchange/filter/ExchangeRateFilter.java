@@ -15,8 +15,7 @@ import java.math.RoundingMode;
 public class ExchangeRateFilter implements Filter {
     private static final String GET_REQUEST = "GET";
     private static final String PATCH_REQUEST = "PATCH";
-    private static final String PARAMETER_RATE = "rate";
-    private static final String ATTRIBUTE_RATE = "rate";
+    private static final String RATE_PARAMETER = "rate";
     private static final String ERROR_400 = "Currency Code Is Missing at the address";
     private static final String BASE_CURRENCY_CODE_ATTRIBUTE = "baseCurrencyCode";
     private static final String TARGET_CURRENCY_CODE_ATTRIBUTE = "targetCurrencyCode";
@@ -38,14 +37,14 @@ public class ExchangeRateFilter implements Filter {
                 filterChain.doFilter(request, response);
             }
         } else if (method.equals(PATCH_REQUEST)) {
-            String rateInput = request.getParameter(PARAMETER_RATE);
+            String rateInput = request.getParameter(RATE_PARAMETER);
             if (!ValidatorManager.isCurrencyCodesRequestValid(input) || !ValidatorManager.isRateInputValid(rateInput)) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 JsonManager.writeJsonError(response, ERROR_400);
             } else {
                 getCodesAndSetThemAsAttributes(request, input);
                 BigDecimal rate = new BigDecimal(rateInput).setScale(6, RoundingMode.HALF_UP);
-                request.setAttribute(ATTRIBUTE_RATE, rate);
+                request.setAttribute(RATE_PARAMETER, rate);
                 filterChain.doFilter(request, response);
             }
         }

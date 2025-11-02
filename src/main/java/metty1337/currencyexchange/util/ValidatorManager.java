@@ -27,4 +27,16 @@ public final class ValidatorManager {
     public static boolean isRateInputValid(String input){
         return input != null && !input.isEmpty();
     }
+
+    public static boolean isExchangeRateInputValid(String baseCurrencyCode, String targetCurrencyCode, String rate){
+//        boolean currencyCodeMatches = isCurrencyCodeRequestValid(baseCurrencyCode);
+//        boolean targetCurrencyCodeMatches = isCurrencyCodeRequestValid(targetCurrencyCode);
+//        boolean rateMatches = isRateInputValid(rate);
+//        return currencyCodeMatches && targetCurrencyCodeMatches && rateMatches;
+        return isCurrencyCodeValid(baseCurrencyCode) && isCurrencyCodeValid(targetCurrencyCode) && isRateInputValid(rate);
+    }
+
+    private static boolean isCurrencyCodeValid(String code){
+        return code.matches(CODE_REGEX);
+    }
 }
