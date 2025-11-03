@@ -25,10 +25,15 @@ public class ExchangeRatesServlet extends HttpServlet {
     private static final String RATE_PARAMETER = "rate";
     private static final String ERROR_409 = "Exchange rate already exists";
     private static final String ERROR_404 = "One (or both) currencies from the currency pair do not exist in the database";
+    private ExchangeRateService exchangeRateService;
+
+    @Override
+    public void init() {
+        this.exchangeRateService = ExchangeRateServiceFactory.createExchangeRateService();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) {
-        ExchangeRateService exchangeRateService = ExchangeRateServiceFactory.createExchangeRateService();
         try {
             List<ExchangeRateDTO> exchangeRateDTOs = exchangeRateService.getExchangeRates();
 
@@ -43,7 +48,6 @@ public class ExchangeRatesServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) {
-        ExchangeRateService exchangeRateService = ExchangeRateServiceFactory.createExchangeRateService();
         String baseCurrencyCode = request.getAttribute(BASE_CURRENCY_CODE_PARAMETER).toString();
         String targetCurrencyCode = request.getAttribute(TARGET_CURRENCY_CODE_PARAMETER).toString();
         BigDecimal rate = new BigDecimal(request.getAttribute(RATE_PARAMETER).toString()).setScale(6, RoundingMode.HALF_UP);

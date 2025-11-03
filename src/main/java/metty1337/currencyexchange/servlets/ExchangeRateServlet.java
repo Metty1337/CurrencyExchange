@@ -21,13 +21,18 @@ public class ExchangeRateServlet extends HttpServlet {
     private static final String RATE_ATTRIBUTE = "rate";
     private static final String BASE_CURRENCY_CODE_ATTRIBUTE = "baseCurrencyCode";
     private static final String TARGET_CURRENCY_CODE_ATTRIBUTE = "targetCurrencyCode";
+    private ExchangeRateService exchangeRateService;
+
+    @Override
+    public void init() {
+        this.exchangeRateService = ExchangeRateServiceFactory.createExchangeRateService();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         String baseCurrencyCode = request.getAttribute(BASE_CURRENCY_CODE_ATTRIBUTE).toString();
         String targetCurrencyCode = request.getAttribute(TARGET_CURRENCY_CODE_ATTRIBUTE).toString();
 
-        ExchangeRateService exchangeRateService = ExchangeRateServiceFactory.createExchangeRateService();
         try {
             ExchangeRateDTO exchangeRateDTO = exchangeRateService.getExchangeRateByCodes(baseCurrencyCode, targetCurrencyCode);
             response.setStatus(HttpServletResponse.SC_OK);
@@ -43,7 +48,6 @@ public class ExchangeRateServlet extends HttpServlet {
         String baseCurrencyCode = request.getAttribute(BASE_CURRENCY_CODE_ATTRIBUTE).toString();
         String targetCurrencyCode = request.getAttribute(TARGET_CURRENCY_CODE_ATTRIBUTE).toString();
         BigDecimal rate = new BigDecimal(request.getAttribute(RATE_ATTRIBUTE).toString()).setScale(6, RoundingMode.HALF_UP);
-        ExchangeRateService exchangeRateService = ExchangeRateServiceFactory.createExchangeRateService();
         try {
             ExchangeRateDTO exchangeRateDTO = exchangeRateService.changeRate(baseCurrencyCode, targetCurrencyCode, rate);
             response.setStatus(HttpServletResponse.SC_OK);

@@ -9,5 +9,4 @@ public interface ExchangeRateDAO {
     ExchangeRate findByCurrencyIds(Integer baseCurrencyId, Integer targetCurrencyId);
     void save(ExchangeRate exchangeRate);
     void update(ExchangeRate exchangeRate);
-    boolean existsByIDs(int baseCurrencyId, int targetCurrencyId);
 }

@@ -3,10 +3,10 @@ package metty1337.currencyexchange.service;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import metty1337.currencyexchange.dao.ExchangeRateDAO;
-import metty1337.currencyexchange.dao.JdbcExchangeRateDAO;
 import metty1337.currencyexchange.dto.CurrencyDTO;
 import metty1337.currencyexchange.dto.ExchangeDTO;
 import metty1337.currencyexchange.dto.ExchangeRateDTO;
+import metty1337.currencyexchange.exceptions.ExchangeRateDoesntExistException;
 import metty1337.currencyexchange.models.ExchangeRate;
 
 import java.math.BigDecimal;
@@ -81,7 +81,6 @@ public class ExchangeRateService {
             rate = usdToTargetCurrencyDTO.getRate().divide(usdToBaseCurrencyDTO.getRate(), 6, RoundingMode.HALF_UP);
             convertedAmount = amount.multiply(rate).setScale(6, RoundingMode.HALF_UP);
         }
-
         return new ExchangeDTO(baseCurrencyDTO, targetCurrencyDTO, rate, amount, convertedAmount);
     }
 
@@ -95,6 +94,11 @@ public class ExchangeRateService {
     }
 
     private boolean isExchangeRateExist(int baseCurrencyID, int targetCurrencyID) {
-        return exchangeRateDAO.existsByIDs(baseCurrencyID, targetCurrencyID);
+        try {
+            ExchangeRate exchangeRate = exchangeRateDAO.findByCurrencyIds(baseCurrencyID, targetCurrencyID);
+            return true;
+        } catch (ExchangeRateDoesntExistException e) {
+            return false;
+        }
     }
 }

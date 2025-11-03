@@ -21,10 +21,15 @@ public class ExchangeServlet extends HttpServlet {
     private static final String PARAMETER_TARGET_CURRENCY_CODE = "to";
     private static final String PARAMETER_AMOUNT = "amount";
     private static final String ERROR_404 = "One (or both) currencies from the currency pair do not exist in the database";
+    private ExchangeRateService exchangeRateService;
+
+    @Override
+    public void init() {
+        this.exchangeRateService = ExchangeRateServiceFactory.createExchangeRateService();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)  {
-        ExchangeRateService exchangeRateService = ExchangeRateServiceFactory.createExchangeRateService();
         String baseCurrencyCode = request.getAttribute(PARAMETER_BASE_CURRENCY_CODE).toString();
         String targetCurrencyCode = request.getAttribute(PARAMETER_TARGET_CURRENCY_CODE).toString();
         BigDecimal amount = new BigDecimal(request.getAttribute(PARAMETER_AMOUNT).toString()).setScale(6, RoundingMode.HALF_UP);

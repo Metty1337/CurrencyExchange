@@ -15,11 +15,16 @@ import metty1337.currencyexchange.util.JsonManager;
 public class CurrencyServlet extends HttpServlet {
     private static final String ERROR_404_MESSAGE = "Currency Code Is Not Found";
     private static final String CODE_ATTRIBUTE = "code";
+    private CurrencyService currencyService;
+
+    @Override
+    public void init() {
+        this.currencyService = CurrencyServiceFactory.createCurrencyService();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         String code = request.getAttribute(CODE_ATTRIBUTE).toString();
-        CurrencyService currencyService = CurrencyServiceFactory.createCurrencyService();
         try {
             CurrencyDTO currencyDTO = currencyService.getCurrencyByCode(code);
             response.setStatus(HttpServletResponse.SC_OK);

@@ -98,24 +98,6 @@ public class JdbcExchangeRateDAO implements ExchangeRateDAO {
         }
     }
 
-    @Override
-    public boolean existsByIDs(int baseCurrencyId, int targetCurrencyId) {
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_COUNT_EXCHANGE_RATES_BY_IDS)) {
-            preparedStatement.setInt(1, baseCurrencyId);
-            preparedStatement.setInt(2, targetCurrencyId);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return resultSet.getInt(1) > 0;
-                } else {
-                    return false;
-                }
-            }
-        } catch (SQLException e) {
-            throw new DatabaseException(ExceptionMessages.DATABASE_EXCEPTION.getMessage(), e);
-        }
-    }
-
     private ExchangeRate mapRow(ResultSet resultSet) {
         try {
             return new ExchangeRate(

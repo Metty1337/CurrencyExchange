@@ -20,10 +20,16 @@ public class CurrenciesServlet extends HttpServlet {
     private static final String PARAMETER_CODE = "code";
     private static final String PARAMETER_SIGN = "sign";
     private static final String ERROR_409 = "Currency with this code already exists";
+    private CurrencyService currencyService;
+
+
+    @Override
+    public void init() {
+        this.currencyService = CurrencyServiceFactory.createCurrencyService();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) {
-        CurrencyService currencyService = CurrencyServiceFactory.createCurrencyService();
         try {
             List<CurrencyDTO> currenciesDTO = currencyService.getCurrencies();
 
@@ -42,7 +48,6 @@ public class CurrenciesServlet extends HttpServlet {
         String code = request.getAttribute(PARAMETER_CODE).toString();
         String sign = request.getAttribute(PARAMETER_SIGN).toString();
 
-        CurrencyService currencyService = CurrencyServiceFactory.createCurrencyService();
         CurrencyDTO currencyDTO = new CurrencyDTO(null, name, code, sign);
         try {
             currencyService.createCurrency(currencyDTO);
