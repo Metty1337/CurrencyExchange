@@ -2,6 +2,7 @@ package metty1337.currencyexchange.service;
 
 import lombok.AllArgsConstructor;
 import metty1337.currencyexchange.dao.CurrencyDAO;
+import metty1337.currencyexchange.dao.JdbcCurrencyDAO;
 import metty1337.currencyexchange.dto.CurrencyDTO;
 import metty1337.currencyexchange.mapper.CurrencyMapper;
 import metty1337.currencyexchange.models.Currency;

@@ -3,6 +3,7 @@ package metty1337.currencyexchange.factory;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import metty1337.currencyexchange.dao.CurrencyDAO;
+import metty1337.currencyexchange.dao.JdbcCurrencyDAO;
 import metty1337.currencyexchange.mapper.CurrencyMapper;
 import metty1337.currencyexchange.service.CurrencyService;
 
@@ -10,7 +11,7 @@ import metty1337.currencyexchange.service.CurrencyService;
 public final class CurrencyServiceFactory {
     public static CurrencyService createCurrencyService() {
         CurrencyMapper currencyMapper = new CurrencyMapper();
-        CurrencyDAO currencyDAO = new CurrencyDAO();
+        CurrencyDAO currencyDAO = new JdbcCurrencyDAO();
         return new CurrencyService(currencyDAO, currencyMapper);
     }
 }

@@ -3,6 +3,7 @@ package metty1337.currencyexchange.service;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import metty1337.currencyexchange.dao.ExchangeRateDAO;
+import metty1337.currencyexchange.dao.JdbcExchangeRateDAO;
 import metty1337.currencyexchange.dto.CurrencyDTO;
 import metty1337.currencyexchange.dto.ExchangeDTO;
 import metty1337.currencyexchange.dto.ExchangeRateDTO;
