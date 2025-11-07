@@ -4,7 +4,7 @@ import metty1337.currencyexchange.models.ExchangeRate;
 
 import java.util.List;
 
-public interface ExchangeRateDAO {
+public interface ExchangeRateDao {
     List<ExchangeRate> findAll();
     ExchangeRate findByCurrencyIds(Integer baseCurrencyId, Integer targetCurrencyId);
     void save(ExchangeRate exchangeRate);

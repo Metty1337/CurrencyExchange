@@ -1,8 +1,10 @@
 package metty1337.currencyexchange.service;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import metty1337.currencyexchange.dao.ExchangeRateDAO;
+import lombok.NoArgsConstructor;
+import metty1337.currencyexchange.dao.ExchangeRateDao;
 import metty1337.currencyexchange.dto.CurrencyDTO;
 import metty1337.currencyexchange.dto.ExchangeDTO;
 import metty1337.currencyexchange.dto.ExchangeRateDTO;
@@ -14,11 +16,20 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
-@AllArgsConstructor(access = AccessLevel.PUBLIC)
+@NoArgsConstructor(force = true, access = AccessLevel.PROTECTED)
+@ApplicationScoped
 public class ExchangeRateService {
     private static final String USD_CODE = "USD";
-    private ExchangeRateDAO exchangeRateDAO;
+    private final ExchangeRateDao exchangeRateDAO;
+
+    @Inject
     private CurrencyService currencyService;
+
+    @Inject
+    public ExchangeRateService(ExchangeRateDao exchangeRateDAO, CurrencyService currencyService) {
+        this.exchangeRateDAO = exchangeRateDAO;
+        this.currencyService = currencyService;
+    }
 
     public List<ExchangeRateDTO> getExchangeRates() {
         List<ExchangeRate> exchangeRates = exchangeRateDAO.findAll();

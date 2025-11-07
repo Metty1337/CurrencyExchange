@@ -4,8 +4,8 @@ import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import metty1337.currencyexchange.util.JsonManager;
-import metty1337.currencyexchange.util.ValidatorManager;
+import metty1337.currencyexchange.util.JsonResponseWriter;
+import metty1337.currencyexchange.util.Validator;
 
 import java.io.IOException;
 
@@ -21,16 +21,16 @@ public class CurrenciesFilter implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws ServletException, IOException {
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         HttpServletRequest request = (HttpServletRequest) servletRequest;
-        JsonManager.prepareResponse(response);
+        JsonResponseWriter.prepareResponse(response);
 
         String method = request.getMethod();
         if (method.equals(POST_REQUEST)) {
             String name = request.getParameter(PARAMETER_NAME);
             String code = request.getParameter(PARAMETER_CODE);
             String sign = request.getParameter(PARAMETER_SIGN);
-            if (!ValidatorManager.isCurrencyComponentsValid(name, code, sign)) {
+            if (!Validator.isCurrencyComponentsValid(name, code, sign)) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                JsonManager.writeJsonError(response, ERROR_400);
+                JsonResponseWriter.writeJsonError(response, ERROR_400);
             } else {
                 request.setAttribute(PARAMETER_NAME, name);
                 request.setAttribute(PARAMETER_CODE, code);

@@ -11,8 +11,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class DatabaseConnection {
-    //    private static final String DB_URL = "jdbc:sqlite:/opt/tomcat/CurrencyExchange/data/sqlite/database.db";
+public final class ConnectionFactory {
     private static final String DB_URL = "jdbc:sqlite:C:\\Users\\novik\\IdeaProjects\\CurrencyExchange\\data\\db\\sqlite\\database.db";
     private static final String TURN_FOREIGN_KEYS_ON = "PRAGMA foreign_keys = ON;";
 

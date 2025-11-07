@@ -1,5 +1,6 @@
 package metty1337.currencyexchange.mapper;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import lombok.NoArgsConstructor;
 import metty1337.currencyexchange.dto.CurrencyDTO;
 import metty1337.currencyexchange.models.Currency;
@@ -7,6 +8,7 @@ import metty1337.currencyexchange.models.Currency;
 import java.util.ArrayList;
 import java.util.List;
 
+@ApplicationScoped
 @NoArgsConstructor
 public class CurrencyMapper {
     public CurrencyDTO toDTO(Currency currency) {

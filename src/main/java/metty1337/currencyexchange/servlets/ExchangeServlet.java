@@ -1,5 +1,6 @@
 package metty1337.currencyexchange.servlets;
 
+import jakarta.inject.Inject;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,9 +9,8 @@ import metty1337.currencyexchange.dto.ExchangeDTO;
 import metty1337.currencyexchange.errors.ErrorMessages;
 import metty1337.currencyexchange.exceptions.CurrencyDoesntExistException;
 import metty1337.currencyexchange.exceptions.ExchangeRateDoesntExistException;
-import metty1337.currencyexchange.factory.ExchangeRateServiceFactory;
 import metty1337.currencyexchange.service.ExchangeRateService;
-import metty1337.currencyexchange.util.JsonManager;
+import metty1337.currencyexchange.util.JsonResponseWriter;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -21,12 +21,9 @@ public class ExchangeServlet extends HttpServlet {
     private static final String PARAMETER_TARGET_CURRENCY_CODE = "to";
     private static final String PARAMETER_AMOUNT = "amount";
     private static final String ERROR_404 = "One (or both) currencies from the currency pair do not exist in the database";
-    private ExchangeRateService exchangeRateService;
 
-    @Override
-    public void init() {
-        this.exchangeRateService = ExchangeRateServiceFactory.createExchangeRateService();
-    }
+    @Inject
+    private ExchangeRateService exchangeRateService;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)  {
@@ -37,7 +34,7 @@ public class ExchangeServlet extends HttpServlet {
         try {
             ExchangeDTO exchangeDTO = exchangeRateService.exchange(baseCurrencyCode, targetCurrencyCode, amount);
             response.setStatus(HttpServletResponse.SC_OK);
-            JsonManager.writeJsonResult(response, exchangeDTO);
+            JsonResponseWriter.writeJsonResult(response, exchangeDTO);
         } catch (RuntimeException e) {
             handleErrors(e, response);
         }
@@ -48,11 +45,11 @@ public class ExchangeServlet extends HttpServlet {
         if (e instanceof ExchangeRateDoesntExistException || e instanceof CurrencyDoesntExistException) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             log(ERROR_404);
-            JsonManager.writeJsonError(response, ERROR_404);
+            JsonResponseWriter.writeJsonError(response, ERROR_404);
         } else {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             log(ErrorMessages.ERROR_500.getMessage());
-            JsonManager.writeJsonError(response, ErrorMessages.ERROR_500.getMessage());
+            JsonResponseWriter.writeJsonError(response, ErrorMessages.ERROR_500.getMessage());
         }
     }
 }

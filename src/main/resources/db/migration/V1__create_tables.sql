@@ -17,3 +17,5 @@ CREATE TABLE IF NOT EXISTS ExchangeRates
     FOREIGN KEY (BaseCurrencyId) REFERENCES Currencies (ID),
     FOREIGN KEY (TargetCurrencyId) REFERENCES Currencies (ID)
 );
+
+CREATE INDEX IF NOT EXISTS IdxCurrencyPair ON ExchangeRates(BaseCurrencyId, TargetCurrencyId);

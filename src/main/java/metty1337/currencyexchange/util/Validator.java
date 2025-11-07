@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class ValidatorManager {
+public final class Validator {
     private static final String NAME_REGEX = "^[A-Za-zА-Яа-я\\s\\-']{2,20}$";
     private static final String CODE_REGEX = "([A-Z]{3})";
     private static final String SIGN_REGEX = "(.)";

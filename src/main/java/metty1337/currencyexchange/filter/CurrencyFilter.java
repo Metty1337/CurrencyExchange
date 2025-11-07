@@ -4,8 +4,8 @@ import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import metty1337.currencyexchange.util.JsonManager;
-import metty1337.currencyexchange.util.ValidatorManager;
+import metty1337.currencyexchange.util.JsonResponseWriter;
+import metty1337.currencyexchange.util.Validator;
 
 import java.io.IOException;
 
@@ -18,12 +18,12 @@ public class CurrencyFilter implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         HttpServletRequest request = (HttpServletRequest) servletRequest;
-        JsonManager.prepareResponse(response);
+        JsonResponseWriter.prepareResponse(response);
 
         String code = request.getPathInfo();
-        if (!ValidatorManager.isCurrencyCodeRequestValid(code)) {
+        if (!Validator.isCurrencyCodeRequestValid(code)) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            JsonManager.writeJsonError(response, ERROR_400_MESSAGE);
+            JsonResponseWriter.writeJsonError(response, ERROR_400_MESSAGE);
         } else {
             code = transformInRightFormat(code);
             request.setAttribute(CODE_ATTRIBUTE, code);

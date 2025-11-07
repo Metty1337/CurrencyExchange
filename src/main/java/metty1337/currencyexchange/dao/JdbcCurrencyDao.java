@@ -1,34 +1,37 @@
 package metty1337.currencyexchange.dao;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
+import jakarta.enterprise.context.ApplicationScoped;
+import lombok.NoArgsConstructor;
 import metty1337.currencyexchange.exceptions.CurrencyAlreadyExistsException;
 import metty1337.currencyexchange.exceptions.CurrencyDoesntExistException;
 import metty1337.currencyexchange.exceptions.DatabaseException;
 import metty1337.currencyexchange.exceptions.ExceptionMessages;
 import metty1337.currencyexchange.models.Currency;
-import metty1337.currencyexchange.util.CurrenciesColumns;
-import metty1337.currencyexchange.util.DatabaseConnection;
+import metty1337.currencyexchange.util.ConnectionFactory;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@AllArgsConstructor(access = AccessLevel.PUBLIC)
-public class JdbcCurrencyDAO implements CurrencyDAO {
-    private static final String SELECT_ALL_CURRENCIES = "SELECT ID, Code, FullName, Sign FROM Currencies";
-    private static final String SELECT_CURRENCY_BY_CODE = "SELECT ID, Code, FullName, Sign FROM Currencies WHERE Code = ?";
-    private static final String SELECT_CURRENCY_BY_ID = "SELECT ID, Code, FullName, Sign FROM Currencies WHERE ID = ?";
-    private static final String INSERT_INTO_CURRENCIES = "INSERT INTO Currencies (Code, FullName, Sign) VALUES (?, ?, ?)";
+@ApplicationScoped
+@NoArgsConstructor
+public class JdbcCurrencyDao implements CurrencyDao {
+    private static final String SELECT_ALL = "SELECT ID, Code, FullName, Sign FROM Currencies";
+    private static final String SELECT_BY_CODE = "SELECT ID, Code, FullName, Sign FROM Currencies WHERE Code = ?";
+    private static final String SELECT_BY_ID = "SELECT ID, Code, FullName, Sign FROM Currencies WHERE ID = ?";
+    private static final String INSERT_INTO = "INSERT INTO Currencies (Code, FullName, Sign) VALUES (?, ?, ?)";
+    private static final String ID = "ID";
+    private static final String NAME = "FullName";
+    private static final String SIGN = "Sign";
+    private static final String CODE = "Code";
     private static final int ERROR_FOR_CONSTRAINT_VIOLATION = 19;
 
     @Override
     public List<Currency> findAll() {
         List<Currency> currencies = new ArrayList<>();
-        try (Connection connection = DatabaseConnection.getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(SELECT_ALL_CURRENCIES)) {
-
+        try (Connection connection = ConnectionFactory.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_ALL)) {
+            ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 Currency currency = mapRow(resultSet);
                 currencies.add(currency);
@@ -42,8 +45,8 @@ public class JdbcCurrencyDAO implements CurrencyDAO {
 
     @Override
     public Currency findByCode(String code) {
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_CURRENCY_BY_CODE)) {
+        try (Connection connection = ConnectionFactory.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_BY_CODE)) {
 
             preparedStatement.setString(1, code);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -60,8 +63,8 @@ public class JdbcCurrencyDAO implements CurrencyDAO {
 
     @Override
     public Currency findById(int id) {
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_CURRENCY_BY_ID)) {
+        try (Connection connection = ConnectionFactory.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_BY_ID)) {
 
             preparedStatement.setInt(1, id);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -82,8 +85,8 @@ public class JdbcCurrencyDAO implements CurrencyDAO {
         String fullName = currency.getFullName();
         String sign = currency.getSign();
 
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_INTO_CURRENCIES)) {
+        try (Connection connection = ConnectionFactory.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_INTO)) {
 
             preparedStatement.setString(1, code);
             preparedStatement.setString(2, fullName);
@@ -104,13 +107,13 @@ public class JdbcCurrencyDAO implements CurrencyDAO {
     private Currency mapRow(ResultSet resultSet) {
         try {
             return new Currency(
-                    resultSet.getInt(CurrenciesColumns.ID.getColumnName()),
-                    resultSet.getString(CurrenciesColumns.CODE.getColumnName()),
-                    resultSet.getString(CurrenciesColumns.NAME.getColumnName()),
-                    resultSet.getString(CurrenciesColumns.SIGN.getColumnName())
+                    resultSet.getInt(ID),
+                    resultSet.getString(CODE),
+                    resultSet.getString(NAME),
+                    resultSet.getString(SIGN)
             );
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new DatabaseException(ExceptionMessages.DATABASE_EXCEPTION.getMessage(), e);
         }
     }
 }

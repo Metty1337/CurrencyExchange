@@ -4,7 +4,7 @@ import metty1337.currencyexchange.models.Currency;
 
 import java.util.List;
 
-public interface CurrencyDAO {
+public interface CurrencyDao {
     List<Currency> findAll();
     Currency findByCode(String code);
     Currency findById(int id);

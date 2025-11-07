@@ -9,6 +9,6 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class ErrorCell {
+public class ErrorMessage {
     private String message;
 }

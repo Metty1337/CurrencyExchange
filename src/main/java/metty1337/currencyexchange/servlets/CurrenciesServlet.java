@@ -1,5 +1,6 @@
 package metty1337.currencyexchange.servlets;
 
+import jakarta.inject.Inject;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,9 +9,8 @@ import metty1337.currencyexchange.dto.CurrencyDTO;
 import metty1337.currencyexchange.errors.ErrorMessages;
 import metty1337.currencyexchange.exceptions.CurrencyAlreadyExistsException;
 import metty1337.currencyexchange.exceptions.DatabaseException;
-import metty1337.currencyexchange.factory.CurrencyServiceFactory;
 import metty1337.currencyexchange.service.CurrencyService;
-import metty1337.currencyexchange.util.JsonManager;
+import metty1337.currencyexchange.util.JsonResponseWriter;
 
 import java.util.List;
 
@@ -20,13 +20,9 @@ public class CurrenciesServlet extends HttpServlet {
     private static final String PARAMETER_CODE = "code";
     private static final String PARAMETER_SIGN = "sign";
     private static final String ERROR_409 = "Currency with this code already exists";
+
+    @Inject
     private CurrencyService currencyService;
-
-
-    @Override
-    public void init() {
-        this.currencyService = CurrencyServiceFactory.createCurrencyService();
-    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) {
@@ -34,11 +30,11 @@ public class CurrenciesServlet extends HttpServlet {
             List<CurrencyDTO> currenciesDTO = currencyService.getCurrencies();
 
             response.setStatus(HttpServletResponse.SC_OK);
-            JsonManager.writeJsonResult(response, currenciesDTO);
+            JsonResponseWriter.writeJsonResult(response, currenciesDTO);
         } catch (DatabaseException e) {
             log(ErrorMessages.ERROR_500.getMessage(), e);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            JsonManager.writeJsonError(response, ErrorMessages.ERROR_500.getMessage());
+            JsonResponseWriter.writeJsonError(response, ErrorMessages.ERROR_500.getMessage());
         }
     }
 
@@ -53,16 +49,16 @@ public class CurrenciesServlet extends HttpServlet {
             currencyService.createCurrency(currencyDTO);
             currencyDTO = currencyService.getCurrencyByCode(currencyDTO.getCode());
             response.setStatus(HttpServletResponse.SC_CREATED);
-            JsonManager.writeJsonResult(response, currencyDTO);
+            JsonResponseWriter.writeJsonResult(response, currencyDTO);
         } catch (RuntimeException e) {
             if (e instanceof CurrencyAlreadyExistsException) {
                 response.setStatus(HttpServletResponse.SC_CONFLICT);
                 log(ERROR_409, e);
-                JsonManager.writeJsonError(response, ERROR_409);
+                JsonResponseWriter.writeJsonError(response, ERROR_409);
             } else {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 log(ErrorMessages.ERROR_500.getMessage(), e);
-                JsonManager.writeJsonError(response, ErrorMessages.ERROR_500.getMessage());
+                JsonResponseWriter.writeJsonError(response, ErrorMessages.ERROR_500.getMessage());
             }
         }
     }

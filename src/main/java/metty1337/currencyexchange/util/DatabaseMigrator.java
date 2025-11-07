@@ -9,9 +9,9 @@ import org.flywaydb.core.Flyway;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DatabaseMigrator {
-    public static void migrate(String URL) {
+    public static void migrate(String url) {
         Flyway flyway = Flyway.configure()
-                .dataSource(URL, null, null)
+                .dataSource(url, null, null)
                 .locations("classpath:db/migration")
                 .load();
         try {

@@ -1,5 +1,6 @@
 package metty1337.currencyexchange.servlets;
 
+import jakarta.inject.Inject;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,9 +9,8 @@ import metty1337.currencyexchange.dto.ExchangeRateDTO;
 import metty1337.currencyexchange.errors.ErrorMessages;
 import metty1337.currencyexchange.exceptions.CurrencyDoesntExistException;
 import metty1337.currencyexchange.exceptions.ExchangeRateDoesntExistException;
-import metty1337.currencyexchange.factory.ExchangeRateServiceFactory;
 import metty1337.currencyexchange.service.ExchangeRateService;
-import metty1337.currencyexchange.util.JsonManager;
+import metty1337.currencyexchange.util.JsonResponseWriter;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -21,12 +21,9 @@ public class ExchangeRateServlet extends HttpServlet {
     private static final String RATE_ATTRIBUTE = "rate";
     private static final String BASE_CURRENCY_CODE_ATTRIBUTE = "baseCurrencyCode";
     private static final String TARGET_CURRENCY_CODE_ATTRIBUTE = "targetCurrencyCode";
-    private ExchangeRateService exchangeRateService;
 
-    @Override
-    public void init() {
-        this.exchangeRateService = ExchangeRateServiceFactory.createExchangeRateService();
-    }
+    @Inject
+    private ExchangeRateService exchangeRateService;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) {
@@ -36,7 +33,7 @@ public class ExchangeRateServlet extends HttpServlet {
         try {
             ExchangeRateDTO exchangeRateDTO = exchangeRateService.getExchangeRateByCodes(baseCurrencyCode, targetCurrencyCode);
             response.setStatus(HttpServletResponse.SC_OK);
-            JsonManager.writeJsonResult(response, exchangeRateDTO);
+            JsonResponseWriter.writeJsonResult(response, exchangeRateDTO);
         } catch (RuntimeException e) {
             handleErrors(e, response);
         }
@@ -51,7 +48,7 @@ public class ExchangeRateServlet extends HttpServlet {
         try {
             ExchangeRateDTO exchangeRateDTO = exchangeRateService.changeRate(baseCurrencyCode, targetCurrencyCode, rate);
             response.setStatus(HttpServletResponse.SC_OK);
-            JsonManager.writeJsonResult(response, exchangeRateDTO);
+            JsonResponseWriter.writeJsonResult(response, exchangeRateDTO);
         } catch (RuntimeException e) {
             handleErrors(e, response);
         }
@@ -61,11 +58,11 @@ public class ExchangeRateServlet extends HttpServlet {
         if (e instanceof ExchangeRateDoesntExistException || e instanceof CurrencyDoesntExistException) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             log(ERROR_404);
-            JsonManager.writeJsonError(response, ERROR_404);
+            JsonResponseWriter.writeJsonError(response, ERROR_404);
         } else {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             log(ErrorMessages.ERROR_500.getMessage());
-            JsonManager.writeJsonError(response, ErrorMessages.ERROR_500.getMessage());
+            JsonResponseWriter.writeJsonError(response, ErrorMessages.ERROR_500.getMessage());
         }
     }
 }

@@ -4,22 +4,25 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import metty1337.currencyexchange.errors.ErrorCell;
+import metty1337.currencyexchange.errors.ErrorMessage;
+import metty1337.currencyexchange.exceptions.DatabaseException;
+import metty1337.currencyexchange.exceptions.ExceptionMessages;
 
 import java.io.IOException;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class JsonManager {
+public final class JsonResponseWriter {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final String JSON_CONTENT_TYPE = "application/json";
     private static final String UTF_8_CHARACTER_ENCODING = "UTF-8";
+
     public static void writeJsonError(HttpServletResponse response, String message) {
-        ErrorCell error = new ErrorCell(message);
+        ErrorMessage error = new ErrorMessage(message);
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             objectMapper.writeValue(response.getWriter(), error);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new DatabaseException(ExceptionMessages.DATABASE_EXCEPTION.getMessage(), e);
         }
     }
 
@@ -27,7 +30,7 @@ public final class JsonManager {
         try {
             OBJECT_MAPPER.writeValue(response.getWriter(), result);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new DatabaseException(ExceptionMessages.DATABASE_EXCEPTION.getMessage(), e);
         }
     }
 
